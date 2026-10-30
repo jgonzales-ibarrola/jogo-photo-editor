@@ -1,0 +1,6 @@
+description = "Punchy colors and contrast. Good for travel, festivals, jeepneys, markets."
+contrast = 0.25
+vibrance = 0.4
+clarity = 0.2
+sharpen = 0.35
+noise_reduction = 0.2

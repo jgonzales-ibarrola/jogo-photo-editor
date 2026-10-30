@@ -1,0 +1,13 @@
+# Your preferences. Edit the values, save, and the next `jogo edit` uses them.
+# Command-line options always win over this file.
+
+[defaults]
+preset = "natural"          # Which preset runs when you don't pass --preset. See: jogo presets
+format = "jpg"              # jpg = share anywhere. heic = smaller file. tif = 16-bit, for further editing.
+quality = 92                # 1-100. Only for jpg/heic. 92 looks identical to 100 at half the size.
+output_dir = "photos/out"   # Where edited photos are saved. Originals are never changed.
+input_dir = "photos/in"     # Where `jogo edit` looks when you don't name files.
+resize = 0                  # Long edge in pixels. 0 = keep full 48MP. 2048 is good for Facebook/Instagram.
+crop = ""                   # "" = no crop. Options: "1:1", "4:5", "3:2", "16:9", "9:16".
+strip_location = true       # Remove GPS from saved photos. Keep true if you post online.
+keep_metadata = true        # Keep camera info (date, lens, ISO) in the saved photo.

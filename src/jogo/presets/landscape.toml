@@ -1,0 +1,8 @@
+description = "Mountains, rice terraces, skies. Recovers sky, lifts shadows, adds depth."
+highlights = -0.3
+shadows = 0.25
+contrast = 0.15
+clarity = 0.3
+vibrance = 0.35
+sharpen = 0.4
+noise_reduction = 0.15

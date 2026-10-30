@@ -1,0 +1,8 @@
+description = "Bright midday sun on sand and sea. Tames glare, keeps the water blue."
+highlights = -0.5
+shadows = 0.3
+contrast = 0.1
+vibrance = 0.3
+clarity = 0.1
+sharpen = 0.3
+noise_reduction = 0.1

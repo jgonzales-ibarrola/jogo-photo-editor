@@ -1,0 +1,9 @@
+description = "Sunrise/sunset. Keeps the warm light instead of 'correcting' it away."
+auto_wb = false
+temperature = 0.15
+highlights = -0.35
+shadows = 0.2
+vibrance = 0.25
+contrast = 0.1
+sharpen = 0.25
+noise_reduction = 0.2

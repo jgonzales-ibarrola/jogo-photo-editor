@@ -1,0 +1,5 @@
+description = "Fixes exposure and color, adds a little pop. Safe for any photo."
+vibrance = 0.15
+contrast = 0.05
+sharpen = 0.3
+noise_reduction = 0.2

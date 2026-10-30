@@ -1,0 +1,8 @@
+description = "City lights and night scenes. Keeps it dark, cleans noise, protects lights."
+auto_strength = 0.4
+highlights = -0.4
+shadows = 0.1
+contrast = 0.15
+vibrance = 0.15
+sharpen = 0.15
+noise_reduction = 0.6

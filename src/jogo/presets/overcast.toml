@@ -1,0 +1,8 @@
+description = "Cloudy or rainy-season days. Adds warmth and contrast to flat gray light."
+temperature = 0.1
+contrast = 0.2
+vibrance = 0.3
+clarity = 0.15
+blacks = -0.2
+sharpen = 0.3
+noise_reduction = 0.2

@@ -1,0 +1,8 @@
+description = "Food shots. Warmer, richer colors, a bit of texture."
+temperature = 0.1
+vibrance = 0.3
+contrast = 0.1
+clarity = 0.1
+shadows = 0.15
+sharpen = 0.3
+noise_reduction = 0.2
