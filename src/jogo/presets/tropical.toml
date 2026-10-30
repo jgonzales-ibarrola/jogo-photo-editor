@@ -1,0 +1,11 @@
+description = "Sunny Philippines: turquoise-leaning shadows, golden highlights, rich but natural color."
+highlights = -0.4
+shadows = 0.25
+contrast = 0.1
+vibrance = 0.35
+grade_shadows = 0.3
+grade_shadows_hue = 185
+grade_highlights = 0.3
+grade_highlights_hue = 50
+sharpen = 0.3
+noise_reduction = 0.15

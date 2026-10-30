@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import colorsys
+
 import numpy as np
 from PIL import Image
 from scipy import ndimage
@@ -126,6 +128,22 @@ def apply(img: np.ndarray, s: Settings, wb_gains: np.ndarray | None = None) -> n
         np.clip(img, 0.0, 1.0, out=img)
         del lum, chroma, factor
 
+    # 6b. Color grading: tint shadows and highlights separately (e.g. teal shadows, warm highlights).
+    #     The tint is brightness-neutral, so it changes color without darkening or brightening.
+    if s.grade_shadows > 0 or s.grade_highlights > 0:
+        lum = luminance(img)
+        for amount, hue, weight in (
+            (s.grade_shadows, s.grade_shadows_hue, (1.0 - lum) ** 2),
+            (s.grade_highlights, s.grade_highlights_hue, lum ** 2),
+        ):
+            if amount > 0:
+                tint = np.array(colorsys.hsv_to_rgb((hue % 360) / 360, 1.0, 1.0), dtype=np.float32)
+                tint -= tint @ LUMA
+                weight *= np.float32(0.15 * amount)
+                img += weight[..., None] * tint
+        np.clip(img, 0.0, 1.0, out=img)
+        del lum
+
     # 7. Noise reduction blurs color noise (blotches). Sharpen boosts edges in brightness only.
     #    Both work on the brightness/color split, so neither creates color fringes.
     if s.noise_reduction > 0 or s.sharpen > 0:
@@ -160,15 +178,31 @@ def apply(img: np.ndarray, s: Settings, wb_gains: np.ndarray | None = None) -> n
     return img
 
 
-def crop_to_ratio(img: np.ndarray, ratio: str) -> np.ndarray:
-    """Center-crop to width:height, e.g. "4:5" (tall) or "16:9" (wide)."""
+CROP_POSITIONS = {
+    "center": (0.5, 0.5), "top": (0.5, 0.0), "bottom": (0.5, 1.0), "left": (0.0, 0.5), "right": (1.0, 0.5),
+}
+
+
+def parse_crop_pos(pos: str) -> tuple[float, float]:
+    """"top", "left", ... or "x,y" where 0,0 keeps the top-left corner and 1,1 the bottom-right."""
+    if pos in CROP_POSITIONS:
+        return CROP_POSITIONS[pos]
+    x, y = (float(n) for n in pos.split(","))
+    return min(max(x, 0.0), 1.0), min(max(y, 0.0), 1.0)
+
+
+def crop_box(h: int, w: int, ratio: str, pos: str = "center") -> tuple[int, int, int, int]:
+    """(x0, y0, width, height) of a width:height crop like "4:5", placed by pos."""
     a, b = (float(n) for n in ratio.split(":"))
-    h, w = img.shape[:2]
     target = a / b
+    ax, ay = parse_crop_pos(pos)
     if w / h > target:
         new_w = int(round(h * target))
-        x0 = (w - new_w) // 2
-        return img[:, x0:x0 + new_w]
+        return int(round((w - new_w) * ax)), 0, new_w, h
     new_h = int(round(w / target))
-    y0 = (h - new_h) // 2
-    return img[y0:y0 + new_h, :]
+    return 0, int(round((h - new_h) * ay)), w, new_h
+
+
+def crop_to_ratio(img: np.ndarray, ratio: str, pos: str = "center") -> np.ndarray:
+    x0, y0, cw, ch = crop_box(*img.shape[:2], ratio, pos)
+    return img[y0:y0 + ch, x0:x0 + cw]

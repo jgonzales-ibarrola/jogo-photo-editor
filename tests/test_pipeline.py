@@ -79,3 +79,22 @@ def test_tif_output_is_16_bit(heic_with_gps, tmp_path):
 def test_try_makes_comparison_sheet(heic_with_gps, tmp_path):
     assert cli.main(["try", str(heic_with_gps), "-o", str(tmp_path)]) == 0
     assert (tmp_path / "IMG_0001_compare.jpg").is_file()
+
+
+def test_crop_position():
+    assert adjust.crop_box(600, 800, "4:5", "left") == (0, 0, 480, 600)
+    assert adjust.crop_box(600, 800, "4:5", "right") == (320, 0, 480, 600)
+    assert adjust.crop_box(800, 600, "1:1", "top") == (0, 0, 600, 600)
+    assert adjust.crop_box(800, 600, "1:1", "0.5,1") == (0, 200, 600, 600)
+
+
+def test_color_grading_tints_without_changing_brightness():
+    gray = np.full((50, 50, 3), 0.3, dtype=np.float32)
+    graded = adjust.apply(gray.copy(), Settings(grade_shadows=1.0, grade_shadows_hue=200))
+    assert graded[0, 0, 2] > graded[0, 0, 0]  # shadows pushed toward blue
+    assert abs(adjust.luminance(graded).mean() - 0.3) < 0.01
+
+
+def test_grid_command(heic_with_gps, tmp_path):
+    assert cli.main(["grid", str(heic_with_gps), "--crop", "4:5", "--crop-pos", "top", "-o", str(tmp_path)]) == 0
+    assert (tmp_path / "IMG_0001_grid_4x5_top.jpg").is_file()

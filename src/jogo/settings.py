@@ -11,8 +11,11 @@ from pathlib import Path
 SLIDERS = (
     "exposure", "temperature", "tint", "contrast", "highlights", "shadows",
     "whites", "blacks", "clarity", "vibrance", "saturation",
-    "sharpen", "noise_reduction", "vignette",
+    "sharpen", "noise_reduction", "vignette", "grade_shadows", "grade_highlights",
 )
+# Color grading hues are angles on the color wheel (0 red, 30 orange, 60 yellow, 120 green,
+# 180 cyan/teal, 210 blue, 300 magenta). They replace, not add.
+HUES = ("grade_shadows_hue", "grade_highlights_hue")
 
 
 @dataclass(frozen=True)
@@ -34,6 +37,10 @@ class Settings:
     sharpen: float = 0.0
     noise_reduction: float = 0.0
     vignette: float = 0.0
+    grade_shadows: float = 0.0         # 0..1, how strongly to tint the shadows
+    grade_shadows_hue: float = 200.0   # tint color for shadows (default: teal-blue)
+    grade_highlights: float = 0.0      # 0..1, how strongly to tint the highlights
+    grade_highlights_hue: float = 40.0 # tint color for highlights (default: warm orange)
 
     def plus(self, other: dict[str, float]) -> "Settings":
         """Add slider values on top of these settings (used to stack auto + preset + manual)."""
@@ -78,6 +85,7 @@ DEFAULT_PREFS = {
     "input_dir": "photos/in",
     "resize": 0,
     "crop": "",
+    "crop_pos": "center",
     "strip_location": True,
     "keep_metadata": True,
 }

@@ -12,7 +12,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from . import __version__, adjust, auto, files
-from .settings import SLIDERS, Settings, load_prefs, load_presets
+from .settings import HUES, SLIDERS, Settings, load_prefs, load_presets
 
 USER_PRESETS = Path("my-presets")
 
@@ -50,11 +50,11 @@ def edit_pixels(img: np.ndarray, settings: Settings, manual: dict[str, float] | 
 
 
 def process(path: Path, settings: Settings, manual: dict[str, float], crop: str = "",
-            resize: int = 0) -> tuple[np.ndarray, files.Loaded]:
+            resize: int = 0, crop_pos: str = "center") -> tuple[np.ndarray, files.Loaded]:
     loaded = files.load(path)
     img = loaded.pixels
     if crop:
-        img = np.ascontiguousarray(adjust.crop_to_ratio(img, crop))
+        img = np.ascontiguousarray(adjust.crop_to_ratio(img, crop, crop_pos))
     # Edit at full size, shrink last: sharpening a shrunken photo makes it look crunchy.
     img = edit_pixels(img, settings, manual, verbose=True)
     return files.resize_long_edge(img, resize), loaded
@@ -69,6 +69,7 @@ def cmd_edit(args: argparse.Namespace, prefs: dict) -> int:
     settings = presets[name].settings
     if args.no_auto:
         settings = replace(settings, auto=False)
+    settings = replace(settings, **{h: v for h in HUES if (v := getattr(args, h)) is not None})
 
     photos = _collect(args.paths, prefs["input_dir"])
     if not photos:
@@ -79,13 +80,14 @@ def cmd_edit(args: argparse.Namespace, prefs: dict) -> int:
     fmt = args.format or prefs["format"]
     resize = 2048 if args.preview else (args.resize if args.resize is not None else prefs["resize"])
     crop = args.crop if args.crop is not None else prefs["crop"]
+    crop_pos = args.crop_pos or prefs["crop_pos"]
     manual = _manual_offsets(args)
 
     for i, path in enumerate(photos, 1):
         print(f"[{i}/{len(photos)}] {path.name}  (preset: {name})")
         start = time.perf_counter()
         try:
-            img, loaded = process(path, settings, manual, crop, resize)
+            img, loaded = process(path, settings, manual, crop, resize, crop_pos)
             saved = files.save(
                 img, out_dir / f"{path.stem}_{name}", fmt, args.quality or prefs["quality"],
                 loaded.exif, loaded.icc,
@@ -131,6 +133,46 @@ def cmd_try(args: argparse.Namespace, prefs: dict) -> int:
     return 0
 
 
+def cmd_grid(args: argparse.Namespace, prefs: dict) -> int:
+    """Draw composition guides on a small copy. With --crop, the part that would be cut is darkened."""
+    path = Path(args.photo)
+    img = files.resize_long_edge(files.load(path).pixels, 1600)
+    pil = Image.fromarray((np.clip(img, 0, 1) * 255).astype(np.uint8), "RGB")
+    h, w = img.shape[:2]
+    x0, y0, cw, ch = (0, 0, w, h)
+    if args.crop:
+        x0, y0, cw, ch = adjust.crop_box(h, w, args.crop, args.crop_pos)
+        shade = Image.new("L", (w, h), 140)
+        ImageDraw.Draw(shade).rectangle((x0, y0, x0 + cw - 1, y0 + ch - 1), fill=0)
+        pil.paste((0, 0, 0), mask=shade)
+
+    draw = ImageDraw.Draw(pil)
+    guides = {
+        "thirds": ((1 / 3, 2 / 3), (255, 255, 255)),
+        "golden": ((0.382, 0.618), (255, 210, 0)),
+    }
+    for name in args.guides.split(","):
+        if name == "diagonals":
+            color = (0, 230, 255)
+            draw.line((x0, y0, x0 + cw, y0 + ch), fill=color, width=2)
+            draw.line((x0 + cw, y0, x0, y0 + ch), fill=color, width=2)
+        elif name in guides:
+            fracs, color = guides[name]
+            for f in fracs:
+                draw.line((x0 + f * cw, y0, x0 + f * cw, y0 + ch), fill=color, width=2)
+                draw.line((x0, y0 + f * ch, x0 + cw, y0 + f * ch), fill=color, width=2)
+    draw.rectangle((0, 0, w, 26), fill=(0, 0, 0))
+    draw.text((8, 7), "white = thirds   yellow = golden ratio   cyan = diagonals"
+              + (f"   crop {args.crop} ({args.crop_pos})" if args.crop else ""), fill=(255, 255, 255))
+
+    suffix = f"_grid_{args.crop.replace(':', 'x')}_{args.crop_pos.replace(',', '-')}" if args.crop else "_grid"
+    out = Path(args.out or prefs["output_dir"]) / f"{path.stem}{suffix}.jpg"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    pil.save(out, "JPEG", quality=88)
+    print(f"Saved composition guide: {out}")
+    return 0
+
+
 def cmd_info(args: argparse.Namespace, prefs: dict) -> int:
     path = Path(args.photo)
     loaded = files.load(path)
@@ -166,6 +208,7 @@ def build_parser() -> argparse.ArgumentParser:
     e.add_argument("-f", "--format", choices=["jpg", "heic", "tif"])
     e.add_argument("-q", "--quality", type=int, help="1-100 for jpg/heic.")
     e.add_argument("--crop", help='Aspect ratio, e.g. "4:5", "1:1", "16:9".')
+    e.add_argument("--crop-pos", help='Which part the crop keeps: center, top, bottom, left, right, or "x,y" (0-1).')
     e.add_argument("--resize", type=int, help="Long edge in pixels. 0 = full size.")
     e.add_argument("--preview", action="store_true", help="Quick 2048px version to check the look.")
     e.add_argument("--no-auto", action="store_true", help="Skip auto fixes; use only preset + your sliders.")
@@ -173,7 +216,18 @@ def build_parser() -> argparse.ArgumentParser:
     sliders = e.add_argument_group("sliders (added on top of auto + preset)")
     for name in SLIDERS:
         sliders.add_argument(f"--{name.replace('_', '-')}", dest=name, type=float, metavar="N")
+    for name in HUES:
+        sliders.add_argument(f"--{name.replace('_', '-')}", dest=name, type=float, metavar="DEG",
+                             help="Color wheel angle 0-360 (replaces the preset's hue).")
     e.set_defaults(func=cmd_edit)
+
+    g = sub.add_parser("grid", help="Draw composition guides (thirds, golden ratio, diagonals), optionally with a crop.")
+    g.add_argument("photo")
+    g.add_argument("--crop", help='Show this crop, e.g. "4:5".')
+    g.add_argument("--crop-pos", default="center")
+    g.add_argument("--guides", default="thirds,golden,diagonals", help="Comma list: thirds, golden, diagonals.")
+    g.add_argument("-o", "--out")
+    g.set_defaults(func=cmd_grid)
 
     t = sub.add_parser("try", help="Preview every preset on one photo in a single comparison image.")
     t.add_argument("photo")

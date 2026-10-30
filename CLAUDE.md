@@ -15,9 +15,17 @@ The owner is learning photography with an iPhone Pro Max in the Philippines. Exp
 0. Read docs/my-style.md first and follow it. After the user gives feedback on an edit
    ("too dim", "looks pixelated", "I like this one"), add it there: update "What I like/don't like"
    and add a row to the decision log. If the feedback reveals a tool problem, fix the code too.
-1. If they don't say which look, run `try` on one or two photos, look at the `*_compare.jpg` sheet (Read it),
-   and recommend a preset in one sentence with the reason.
+   Default: do NOT generate `try` sheets or `grid` images (they cost tokens and aren't for posting).
+   Only make them when the user asks ("compare looks", "show grid", "how should I have shot this").
+1. If they don't say which look, pick it from docs/my-style.md. Only if the photo doesn't fit any saved
+   preference (e.g. night, indoor, food), run `try` on one photo and recommend a preset in one sentence.
 2. Run `edit` with that preset. Add sliders only for a clear problem (see docs/03-edits-explained.md, "Common problems").
+2b. Decide on crop with the checklist in docs/06-composition-and-crop.md. Default for full-body travel
+   shots: `--crop-pos bottom`. Then Read the final edited photos (not grids) to check nothing important
+   was cut; if it was, redo that one photo. Say in one line why you cropped or didn't.
+2c. Shooting tips ("how should I take this") only when the user asks, in words, not images.
+2d. Put final post-ready photos in `photos/out/<batch>/post`. Suggest which to post, the carousel order
+   and one caption idea, following docs/07-posting-guide.md. When the user reports results, log them there.
 3. Report what auto-fix changed (the `auto:` lines) in plain words, and where the files were saved.
 4. Full 48MP edits take ~20 s each. For many photos, run in the background, or offer `--preview` first.
 5. You cannot view HEIC/DNG directly. To look at a photo, make a small JPG with `try`, or with `edit --preview -o <scratch dir>`.

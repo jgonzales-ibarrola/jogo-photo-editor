@@ -9,5 +9,6 @@ output_dir = "photos/out"   # Where edited photos are saved. Originals are never
 input_dir = "photos/in"     # Where `jogo edit` looks when you don't name files.
 resize = 0                  # Long edge in pixels. 0 = keep full 48MP. 2048 is good for Facebook/Instagram.
 crop = ""                   # "" = no crop. Options: "1:1", "4:5", "3:2", "16:9", "9:16".
+crop_pos = "center"         # Which part a crop keeps: center, top, bottom, left, right, or "x,y" (0-1).
 strip_location = true       # Remove GPS from saved photos. Keep true if you post online.
 keep_metadata = true        # Keep camera info (date, lens, ISO) in the saved photo.

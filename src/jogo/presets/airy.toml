@@ -1,0 +1,10 @@
+description = "Bright and clean. Light, cheerful, soft contrast, warm glow in the highlights."
+exposure = 0.2
+shadows = 0.3
+highlights = -0.2
+contrast = -0.1
+vibrance = 0.2
+grade_highlights = 0.2
+grade_highlights_hue = 45
+sharpen = 0.25
+noise_reduction = 0.25

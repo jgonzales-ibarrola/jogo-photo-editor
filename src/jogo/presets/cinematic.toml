@@ -1,0 +1,11 @@
+description = "Movie look: teal shadows, warm skin and highlights. Strong, dramatic."
+highlights = -0.3
+shadows = 0.15
+contrast = 0.2
+vibrance = 0.15
+grade_shadows = 0.5
+grade_shadows_hue = 195
+grade_highlights = 0.4
+grade_highlights_hue = 35
+sharpen = 0.25
+noise_reduction = 0.2

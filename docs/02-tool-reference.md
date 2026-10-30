@@ -30,6 +30,7 @@ Output name: `<original name>_<preset>.<format>`, e.g. `IMG_0412_vivid.jpg`.
 | `-f, --format jpg\|heic\|tif` | `jpg`: works everywhere. `heic`: about half the size, same quality. `tif`: 16-bit, for editing further in another app. |
 | `-q, --quality 1-100` | JPG/HEIC quality. 92 is visually identical to 100 at half the file size. |
 | `--crop RATIO` | Center crop. `4:5` Instagram portrait, `1:1` square, `16:9` wide/YouTube, `9:16` Stories/Reels, `3:2` classic photo. |
+| `--crop-pos POS` | Which part the crop keeps: `center`, `top`, `bottom`, `left`, `right`, or `"x,y"` (0–1). See [06](06-composition-and-crop.md). |
 | `--resize PIXELS` | Longest side in pixels. `2048` for Facebook/Instagram. `0` keeps full size. |
 | `--preview` | Fast 2048px version. Use to check a look before the slow full-size edit. |
 | `--no-auto` | Skip auto-fix. Only the preset and your sliders are applied. |
@@ -43,6 +44,16 @@ python -m jogo try photos\in\IMG_0412.HEIC
 ```
 
 Saves `IMG_0412_compare.jpg`: the original plus every preset, side by side, small size.
+
+### `grid` — composition guides
+
+```
+python -m jogo grid photos\in\IMG_0412.HEIC --crop 4:5 --crop-pos bottom
+```
+
+Draws rule-of-thirds (white), golden-ratio (yellow) and diagonal (cyan) lines on a small copy.
+With `--crop`, the part that would be cut is darkened. Pick lines with `--guides thirds,golden`.
+How to read it: [06 Composition and crop](06-composition-and-crop.md).
 
 ### `info` — photo check-up
 
@@ -81,6 +92,11 @@ Start small: 0.1 to 0.3 is a visible change. Same sign convention as Lightroom.
 | `--sharpen` | Sharper edges. Only 0 to 1. | — |
 | `--noise-reduction` | Cleans grain/color speckles (night shots). Only 0 to 1. | — |
 | `--vignette` | Darker corners, draws the eye to the center. | Lighter corners. |
+| `--grade-shadows` | Tints dark areas with `--grade-shadows-hue`. Only 0 to 1. | — |
+| `--grade-highlights` | Tints bright areas with `--grade-highlights-hue`. Only 0 to 1. | — |
+
+The two hue options take a color-wheel angle (0–360) and replace the preset's hue instead of adding to it.
+Color grading explained: [03](03-edits-explained.md).
 
 Plain explanations with "when to use": [03 Edits explained](03-edits-explained.md).
 
@@ -98,6 +114,7 @@ Command-line options always win over this file.
 | `input_dir` | `"photos/in"` | Where `edit` looks when you don't name files. |
 | `resize` | `0` | Long edge in pixels, `0` = full size. |
 | `crop` | `""` | Default crop ratio, `""` = none. |
+| `crop_pos` | `"center"` | Default crop position. |
 | `strip_location` | `true` | Remove GPS location from saved photos. |
 | `keep_metadata` | `true` | Keep date, camera, lens, ISO in saved photos. |
 
@@ -115,6 +132,10 @@ Command-line options always win over this file.
 | `food` | Food. Warmer, richer, a bit of texture. |
 | `night` | City lights. Stays dark, cleans noise, protects lights. |
 | `bw` | Black and white with punch. Street and portraits. |
+| `airy` | Bright, clean, cheerful. Soft contrast, warm glow. |
+| `tropical` | Sunny Philippines: turquoise shadows, golden highlights. |
+| `cinematic` | Movie look: teal shadows, warm highlights. Dramatic. |
+| `film` | Soft film: faded blacks, muted warm colors. |
 
 ### Your own presets
 

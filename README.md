@@ -10,7 +10,7 @@ Each automatic fix is explained in plain words, so you learn while you use it.
 ## What it does
 
 - **Auto-fix**: brightens dark photos, recovers bright skies, lifts dark shadows, removes color casts.
-- **Presets**: ready-made looks (`natural`, `vivid`, `landscape`, `beach`, `golden-hour`, `overcast`, `portrait`, `food`, `night`, `bw`).
+- **Presets**: ready-made looks (14 looks, e.g. `natural`, `beach`, `airy`, `tropical`, `cinematic`, `bw`) including color grading.
 - **Try all looks at once**: one image that shows your photo in every preset, so you can pick.
 - **Photo check-up**: shows the camera settings used and what is wrong or right with the photo.
 - **Full 48MP output**, or resized for social media. Crops to `4:5`, `1:1`, `16:9` and more.
@@ -38,6 +38,9 @@ Edited photos appear in `photos\out`.
 | [03 Edits explained](docs/03-edits-explained.md) | What exposure, contrast, highlights, etc. actually do. |
 | [04 iPhone camera settings](docs/04-iphone-settings.md) | HEIF vs ProRAW, 48MP, exposure, which settings to turn on. |
 | [05 Shooting guide (Philippines)](docs/05-shooting-guide-philippines.md) | Composition and taking better photos where you live. |
+| [06 Composition and crop](docs/06-composition-and-crop.md) | Grid lines, composition techniques, how to decide a crop. |
+| [07 Posting guide](docs/07-posting-guide.md) | Our edit-to-post workflow, carousel order, captions, timing. |
+| [My style](docs/my-style.md) | Your editing taste and past decisions. Grows with every edit. |
 | [Roadmap](ROADMAP.md) | What gets added next, and your learning path. |
 
 ## Using it with Claude Code

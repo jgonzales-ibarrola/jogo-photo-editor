@@ -1,0 +1,12 @@
+description = "Soft film look: faded blacks, gentle warmth, slightly muted colors."
+blacks = 0.3
+contrast = 0.1
+saturation = -0.1
+vibrance = 0.1
+temperature = 0.08
+grade_shadows = 0.3
+grade_shadows_hue = 170
+grade_highlights = 0.25
+grade_highlights_hue = 45
+sharpen = 0.2
+noise_reduction = 0.2

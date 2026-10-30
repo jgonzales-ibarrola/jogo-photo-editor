@@ -15,6 +15,9 @@ Two tracks that grow together: **the tool** and **you**.
 - [ ] Faster full-size edits (target: under 8 s per 48MP photo)
 - [ ] Better ProRAW decoding (use the DNG's own tone curve and Apple's gain maps)
 - [ ] Auto straighten using the horizon
+- [x] Crop position (`--crop-pos`) and composition grids (`grid` command)
+- [x] Color grading (shadow/highlight tints) + `airy`, `tropical`, `cinematic`, `film` presets
+- [ ] Auto crop: detect the subject and place it on a thirds/golden point
 - [ ] Skin-tone protection for vibrance and temperature
 - [ ] Before/after side-by-side for one photo
 

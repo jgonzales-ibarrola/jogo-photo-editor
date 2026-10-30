@@ -52,6 +52,26 @@ This is the safe color slider. Use it first.
 **Saturation** — boosts every color equally.
 Too much: skin turns orange, skies turn neon. Usually keep it at 0. Use −1 for black and white.
 
+**Color grading** — tint the shadows one color and the highlights another. This is what gives
+movies and Instagram creators a recognizable "look". It changes the mood, not the brightness.
+
+- `--grade-shadows 0..1` + `--grade-shadows-hue DEG` — how strong, and which color, in the dark parts.
+- `--grade-highlights 0..1` + `--grade-highlights-hue DEG` — the same for the bright parts.
+- Hue is a position on the color wheel: **0** red, **30** orange, **50** golden yellow, **120** green,
+  **180** cyan/teal, **210** blue, **270** purple, **330** pink.
+
+Classic combinations:
+
+| Look | Shadows | Highlights | Preset |
+|---|---|---|---|
+| Cinematic / teal-orange | teal (190–200) | orange (30–40) | `cinematic` |
+| Tropical / sunny | turquoise (180–190) | golden (45–55) | `tropical` |
+| Film / nostalgic | green-teal (160–175), weak | warm (40–50), weak | `film` |
+| Bright and clean | — | warm glow (45), weak | `airy` |
+| Cool, moody | blue (210–220) | none or slight blue | — |
+
+Keep it subtle: 0.2–0.4. If skin turns green or orange, it's too much.
+
 ## Detail
 
 **Clarity** — contrast in mid-size details (texture of rocks, wood, clothes, clouds).
@@ -72,6 +92,41 @@ Subtle (0.1–0.2) for portraits and food. Avoid on landscapes with clean skies.
 **Crop** — cut away distractions and pick a shape.
 With 48MP you can crop a lot and still have a sharp photo.
 Shapes: `4:5` Instagram feed, `9:16` Stories/Reels/TikTok, `1:1` square, `16:9` wide screens, `3:2` classic.
+
+### When to crop
+
+- **Something distracting at the edge**: a stranger's arm, a trash bin, a pole, a car. Cut it out.
+- **The subject is too small**: lots of empty ground or sky that adds nothing. Crop closer so the subject fills more of the frame.
+- **The horizon is crooked**: straighten it (crop removes the uneven corners). The tool can't straighten yet; use the iPhone Photos app for that.
+- **The subject is dead center and the photo feels static**: crop so the subject sits on a third line (see [05](05-shooting-guide-philippines.md)).
+- **The platform needs a shape**: `4:5` for the Instagram/Facebook feed takes the most screen space. `9:16` for Stories and Reels.
+- **Too much "nothing" at the top**: a big plain sky above a person's head. Trim it, but leave some room above the head.
+
+### When NOT to crop
+
+- **The photo already works.** If nothing distracts and the subject is clear, leave it. Cropping for the sake of it is a common beginner habit.
+- **Cutting at joints**: never crop through ankles, knees, wrists, elbows or the neck. It looks like the person was chopped. Crop mid-thigh or mid-arm instead, or keep the whole body.
+- **Cutting off what makes the photo**: a hand reaching for something, a pose, the top of a building, a shadow that tells the story. Check the edges after cropping.
+- **The place matters**: landmark and travel photos need the landmark *and* some surroundings (mountain, sky). Cropping too tight makes it "a person in front of a wall".
+- **Small or old photos**: a 10MP or smaller photo gets soft fast if you crop hard. Crop gently, or not at all.
+- **Before you edit, if you're unsure**: keep the full photo and make cropped copies. Your originals in `photos\in` are never changed anyway.
+
+### Leave room in the right places
+
+- **Looking room**: if a person looks or points to one side, leave more space on that side.
+- **Walking room**: leave space in front of a moving person or vehicle, not behind.
+- **Headroom**: a small gap above the head. Not a big empty sky, and not touching the edge.
+- **Feet**: in full-body shots, keep both feet fully in the frame, with a little ground below them.
+
+### How the tool crops
+
+`--crop 4:5` cuts equally from both sides by default. Use `--crop-pos bottom` (or `top`, `left`, `right`)
+to keep that side and cut from the other. Check the result with `python -m jogo grid <photo> --crop 4:5`.
+Grids, techniques and the full crop checklist: [06 Composition and crop](06-composition-and-crop.md).
+
+**Example (Cagsawa photos, 2026-10-30)**: the original 3:4 shape was cropped to 4:5 for Instagram.
+It only removed a thin strip top and bottom, and the hand on the tower top and both feet stayed in, so it was safe.
+A tighter crop (e.g. waist up) would have lost the low-angle "giant beside the tower" effect, which is what makes that photo.
 
 ---
 
