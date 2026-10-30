@@ -34,9 +34,26 @@ Big, colorful group opener with Mayon; then closer, more personal shots.
 ## Shape and quality
 
 - Use **4:5** for every photo in a carousel. The first photo sets the shape for all of them.
-- Our output (1638×2048, JPG) is already the right size. Don't re-edit or add filters in the app on top — it stacks and over-processes.
-- Upload over Wi-Fi when you can. Some apps lower quality on weak mobile data.
-- Instagram: turn on *Settings → Media quality → Upload at highest quality*.
+- Every platform re-compresses and shrinks your photo. You can't stop that; you can only give it a clean, right-sized file.
+- Post the `post` version (1638×2048). Keep the `full` version for your archive, zooming and printing.
+- Don't re-edit or add filters in the app on top — it stacks and over-processes.
+- Upload over Wi-Fi. Apps lower quality on weak mobile data or with data saver on.
+
+### Settings to turn on (names move between app versions — search the app's Settings if not found)
+
+| App | Setting |
+|---|---|
+| Instagram | Settings and activity → *Data usage and media quality* → **Upload at highest quality: ON**. Data saver: OFF. |
+| Facebook | Menu → Settings & privacy → Settings → *Media* → photo/video quality: **HD / Optimized off**. Data saver: OFF. |
+| Messenger / Viber | Tap **HD** before sending, or send as a file/document. Otherwise photos are compressed. |
+| iPhone | Settings → Apps → Photos → *Transfer to Mac or PC*: **Keep Originals** (for copying to PC). |
+
+### Getting the edited photos to your phone without losing quality
+
+- **Best: post from the PC.** instagram.com and facebook.com let you create posts in the browser. No transfer, no extra compression.
+- **iCloud for Windows**: drop the `post` files into iCloud Photos; they appear on the iPhone.
+- **Google Drive / OneDrive**: upload, then *Save to Files/Photos* on the iPhone. Keep "original quality".
+- **Avoid** sending them to yourself via Messenger, Viber or email — they get compressed.
 
 ## Caption
 
@@ -66,4 +83,8 @@ Fill this in after each post. Over time it shows what *your* followers like.
 
 | Date | Post | Order / caption idea | Result (likes, comments, shares after 3 days) | Lesson |
 |---|---|---|---|---|
+| 2026-10-30 | Cagsawa Trail ATV, 11 photos (owner's picks) | 0185 → 0224 → 0263 → 0268 → 0186 → 0247 → 0258 → 0265 → 0278 → 0184 → 0282; splash opener, splashes spread out, duo closer | | |
+| 2026-10-30 | naga, 10 of 56 (Claude's picks) | 0612 → 0576 → 0601 → 0691 → 0618 → 0654 → 0589 → 0636_ORIG → 0695 → 0737; group opener, church, family, mall, donut closer. "A day in Naga: Ina, family and Halloween donuts" | | |
+| 2026-10-30 | biggs, 3 of 4 | 6963 → 6962 → 6807; "Late merienda at Biggs 🍟" | | |
+| 2026-10-30 | cagsawa-trail, 9 of 24 (Claude's picks) | 6801 → 6953 → 6947 → 6941 → 6829 → 6870 → 6935 → 6915 → 6899; ruins opener, splash in the middle, fun duo closer. "Ruins in the morning, mud by noon. 1, 2 or 3?" | | |
 | | test2 Cagsawa carousel | group → couple → solo; "Which one is your favorite?" | | |

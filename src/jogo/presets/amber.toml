@@ -1,0 +1,14 @@
+description = "Like the iPhone Amber style. Warm amber undertone, deep rich contrast. Streets, buildings, golden light."
+auto_wb = false
+temperature = 0.12
+contrast = 0.18
+blacks = -0.2
+highlights = -0.25
+vibrance = 0.2
+grade_shadows = 0.15
+grade_shadows_hue = 30
+grade_highlights = 0.2
+grade_highlights_hue = 40
+clarity = 0.05
+sharpen = 0.25
+noise_reduction = 0.15

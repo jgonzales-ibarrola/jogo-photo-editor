@@ -1,0 +1,9 @@
+description = "Like the iPhone Bright style. Lighter, more vivid color, clean deep blacks. Cheerful everyday look."
+exposure = 0.15
+shadows = 0.2
+highlights = -0.25
+contrast = 0.12
+blacks = -0.15
+vibrance = 0.35
+sharpen = 0.25
+noise_reduction = 0.15

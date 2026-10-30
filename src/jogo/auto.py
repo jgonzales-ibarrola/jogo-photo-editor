@@ -48,6 +48,10 @@ def analyze(img: np.ndarray, auto_wb: bool = True, strength: float = 1.0) -> Ana
     has_neutrals = neutral.mean() > 0.03
     cast = linear[neutral].mean(axis=0) if has_neutrals else np.ones(3)
 
+    # Neon and colored lamps: pure blue/red is dark by luminance even when the channel is maxed out,
+    # so brightening the "dark" photo blows the lights into a blur.
+    colored_lights = float(((top > 0.6) & (spread > 0.6)).mean() * 100)
+
     a = Analysis(median, dark_pct, bright_pct, cast)
     k = float(np.clip(strength, 0, 1))
 
@@ -56,6 +60,11 @@ def analyze(img: np.ndarray, auto_wb: bool = True, strength: float = 1.0) -> Ana
     ev = float(np.clip(np.log2((TARGET_MIDTONE / max(median, 1e-3)) ** GAMMA), -0.4, 1.5)) * 0.7
     if ev < 0 and median < 0.68:
         ev = 0.0
+    lit_scene = ev > 0.3 and colored_lights > 1
+    if lit_scene:
+        ev = 0.2
+        a.notes.append(f"Dark scene with colored lights ({colored_lights:.0f}% of the photo, e.g. neon) "
+                       "-> kept dark so the lights stay sharp and readable.")
     if abs(ev) >= 0.1:
         a.offsets["exposure"] = round(ev * k, 2)
         a.notes.append(f"Photo is {'dark' if ev > 0 else 'bright'} -> exposure {ev * k:+.2f} EV.")
@@ -66,7 +75,7 @@ def analyze(img: np.ndarray, auto_wb: bool = True, strength: float = 1.0) -> Ana
         a.notes.append(f"{bright_pct:.1f}% of the photo is near white -> highlights {amt * k:+.2f} to recover sky/detail.")
 
     if dark_pct > 3 or median < 0.25:
-        amt = min(0.5, 0.15 + dark_pct / 40)
+        amt = min(0.15 if lit_scene else 0.5, 0.15 + dark_pct / 40)
         a.offsets["shadows"] = round(amt * k, 2)
         a.notes.append(f"{dark_pct:.1f}% of the photo is near black -> shadows {amt * k:+.2f} to show detail.")
 

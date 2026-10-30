@@ -41,6 +41,18 @@ def test_auto_brightens_dark_photo():
     assert adjust.luminance(out).mean() > adjust.luminance(dark).mean()
 
 
+def test_auto_keeps_neon_scene_dark():
+    img = np.full((300, 400, 3), 0.02, np.float32)
+    img[100:150, 50:350] = (0.05, 0.05, 0.95)  # blue neon: dark by luminance, channel near max
+    a = auto.analyze(img)
+    assert a.offsets["exposure"] <= 0.2
+    assert a.offsets.get("shadows", 0) <= 0.15
+
+
+def test_baseline_exposure_missing_is_zero(heic_with_gps):
+    assert files.baseline_exposure(heic_with_gps) == 0.0
+
+
 def test_bw_has_no_color():
     out = cli.edit_pixels(_gradient(), load_presets()["bw"].settings)
     assert np.abs(out[..., 0] - out[..., 1]).max() < 1e-4

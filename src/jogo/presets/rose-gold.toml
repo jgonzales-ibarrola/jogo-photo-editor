@@ -1,0 +1,14 @@
+description = "Like the iPhone Rose Gold style. Warm with a soft pink-red undertone. Flattering for portraits and skin."
+auto_wb = false
+temperature = 0.06
+tint = 0.06
+contrast = 0.15
+blacks = -0.15
+highlights = -0.2
+vibrance = 0.2
+grade_shadows = 0.12
+grade_shadows_hue = 345
+grade_highlights = 0.25
+grade_highlights_hue = 25
+sharpen = 0.2
+noise_reduction = 0.2

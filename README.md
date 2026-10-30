@@ -10,7 +10,7 @@ Each automatic fix is explained in plain words, so you learn while you use it.
 ## What it does
 
 - **Auto-fix**: brightens dark photos, recovers bright skies, lifts dark shadows, removes color casts.
-- **Presets**: ready-made looks (14 looks, e.g. `natural`, `beach`, `airy`, `tropical`, `cinematic`, `bw`) including color grading.
+- **Presets**: ready-made looks (18 looks, incl. iPhone-style `amber`, `gold`, `rose-gold`, `bright`; e.g. `natural`, `beach`, `airy`, `tropical`, `cinematic`, `bw`) including color grading.
 - **Try all looks at once**: one image that shows your photo in every preset, so you can pick.
 - **Photo check-up**: shows the camera settings used and what is wrong or right with the photo.
 - **Full 48MP output**, or resized for social media. Crops to `4:5`, `1:1`, `16:9` and more.

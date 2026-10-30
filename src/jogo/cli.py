@@ -50,8 +50,9 @@ def edit_pixels(img: np.ndarray, settings: Settings, manual: dict[str, float] | 
 
 
 def process(path: Path, settings: Settings, manual: dict[str, float], crop: str = "",
-            resize: int = 0, crop_pos: str = "center") -> tuple[np.ndarray, files.Loaded]:
-    loaded = files.load(path)
+            resize: int = 0, crop_pos: str = "center",
+            flat_raw: bool = False) -> tuple[np.ndarray, files.Loaded]:
+    loaded = files.load(path, flat_raw)
     img = loaded.pixels
     if crop:
         img = np.ascontiguousarray(adjust.crop_to_ratio(img, crop, crop_pos))
@@ -87,7 +88,7 @@ def cmd_edit(args: argparse.Namespace, prefs: dict) -> int:
         print(f"[{i}/{len(photos)}] {path.name}  (preset: {name})")
         start = time.perf_counter()
         try:
-            img, loaded = process(path, settings, manual, crop, resize, crop_pos)
+            img, loaded = process(path, settings, manual, crop, resize, crop_pos, args.flat_raw)
             saved = files.save(
                 img, out_dir / f"{path.stem}_{name}", fmt, args.quality or prefs["quality"],
                 loaded.exif, loaded.icc,
@@ -173,11 +174,14 @@ def cmd_grid(args: argparse.Namespace, prefs: dict) -> int:
     return 0
 
 
+KIND_LABELS = {"raw": "RAW (DNG)", "raw-apple": "ProRAW (Apple's finished photo)", "image": "processed image"}
+
+
 def cmd_info(args: argparse.Namespace, prefs: dict) -> int:
     path = Path(args.photo)
     loaded = files.load(path)
     h, w = loaded.pixels.shape[:2]
-    print(f"{path.name}: {w}x{h} ({w * h / 1e6:.0f} MP), {'RAW (DNG)' if loaded.kind == 'raw' else 'processed image'}")
+    print(f"{path.name}: {w}x{h} ({w * h / 1e6:.0f} MP), {KIND_LABELS[loaded.kind]}")
     for k, v in files.describe_exif(loaded.exif).items():
         print(f"  {k}: {v}")
     a = auto.analyze(loaded.pixels)
@@ -213,6 +217,9 @@ def build_parser() -> argparse.ArgumentParser:
     e.add_argument("--preview", action="store_true", help="Quick 2048px version to check the look.")
     e.add_argument("--no-auto", action="store_true", help="Skip auto fixes; use only preset + your sliders.")
     e.add_argument("--keep-location", action="store_true", help="Keep GPS location in the saved file.")
+    e.add_argument("--flat-raw", action="store_true",
+                   help="ProRAW: decode the raw data yourself instead of starting from Apple's finished photo. "
+                        "Flatter; only for rescuing badly blown or very dark shots.")
     sliders = e.add_argument_group("sliders (added on top of auto + preset)")
     for name in SLIDERS:
         sliders.add_argument(f"--{name.replace('_', '-')}", dest=name, type=float, metavar="N")

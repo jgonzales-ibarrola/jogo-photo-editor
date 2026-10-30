@@ -13,7 +13,10 @@ Two tracks that grow together: **the tool** and **you**.
 
 ### v0.2 — better results
 - [ ] Faster full-size edits (target: under 8 s per 48MP photo)
-- [ ] Better ProRAW decoding (use the DNG's own tone curve and Apple's gain maps)
+- [x] Better ProRAW decoding: start from Apple's finished photo inside the DNG (2026-10-30); `--flat-raw` for the old decode
+- [x] Presets like iPhone Photographic Styles: `amber`, `gold`, `rose-gold`, `bright`
+- [ ] Research to improve looks: tune presets against more reference photos (owner will send), sunny-day tests,
+      use Apple's semantic masks in ProRAW (sky/skin/people) for local edits, check open LUT licenses
 - [ ] Auto straighten using the horizon
 - [x] Crop position (`--crop-pos`) and composition grids (`grid` command)
 - [x] Color grading (shadow/highlight tints) + `airy`, `tropical`, `cinematic`, `film` presets

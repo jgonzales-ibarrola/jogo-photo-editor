@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import io
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -27,12 +28,23 @@ BASIC_EXIF_TAGS = (0x829A, 0x829D, 0x8827, 0x9003, 0x920A, 0xA405, 0xA434)
 SRGB_ICC = ImageCms.ImageCmsProfile(ImageCms.createProfile("sRGB")).tobytes()
 
 
+def baseline_exposure(path: Path) -> float:
+    """The DNG's BaselineExposure tag in EV (how much the camera says to brighten), 0 if missing."""
+    try:
+        with tifffile.TiffFile(path) as tif:
+            tag = tif.pages[0].tags.get(50730)
+            num, den = tag.value
+            return num / den
+    except Exception:
+        return 0.0
+
+
 @dataclass
 class Loaded:
     pixels: np.ndarray       # float32 RGB, 0..1
     exif: Image.Exif | None
     icc: bytes | None
-    kind: str                # "raw" or "image"
+    kind: str                # "raw", "raw-apple" (Apple's finished photo from a ProRAW) or "image"
 
 
 def _basic_exif(src: Image.Exif) -> Image.Exif:
@@ -48,13 +60,47 @@ def _basic_exif(src: Image.Exif) -> Image.Exif:
     return out
 
 
-def load(path: Path) -> Loaded:
+def _apple_preview(path: Path) -> Image.Image | None:
+    """ProRAW stores Apple's finished photo (tone mapping, sky/skin masks, color) as a full-size JPEG
+    in the first IFD. That's the iPhone look; a plain raw decode can't rebuild it and looks flat."""
+    try:
+        with tifffile.TiffFile(path) as tif:
+            page = tif.pages[0]
+            if page.subfiletype != 1 or page.compression != 7 or len(page.dataoffsets) != 1:
+                return None
+            if max(page.shape[:2]) < 3000:  # only a thumbnail, not worth editing
+                return None
+            orientation = page.tags[274].value if 274 in page.tags else 1
+            tif.filehandle.seek(page.dataoffsets[0])
+            data = tif.filehandle.read(page.databytecounts[0])
+        im = Image.open(io.BytesIO(data))
+        im.load()
+        im.getexif()[ORIENTATION] = orientation
+        return ImageOps.exif_transpose(im)
+    except Exception:
+        return None
+
+
+def load(path: Path, flat_raw: bool = False) -> Loaded:
     ext = path.suffix.lower()
+    if ext in RAW_EXTS and not flat_raw and (im := _apple_preview(path)) is not None:
+        exif = None
+        try:
+            with Image.open(path) as src:
+                exif = _basic_exif(src.getexif())
+        except Exception:
+            pass
+        pixels = np.asarray(im.convert("RGB"), dtype=np.float32) / 255.0
+        return Loaded(np.ascontiguousarray(pixels), exif, im.info.get("icc_profile"), "raw-apple")
     if ext in RAW_EXTS:
         with rawpy.imread(str(path)) as raw:
             rgb = raw.postprocess(
                 use_camera_wb=True,
                 no_auto_bright=True,
+                # rawpy ignores the DNG's BaselineExposure. iPhone ProRAW relies on it (often +2..+5 EV),
+                # so without it many shots come out nearly black. rawpy allows -2..+3 EV.
+                exp_shift=float(np.clip(2.0 ** baseline_exposure(path), 0.25, 8.0)),
+                exp_preserve_highlights=1.0,
                 output_bps=16,
                 output_color=rawpy.ColorSpace.sRGB,
             )

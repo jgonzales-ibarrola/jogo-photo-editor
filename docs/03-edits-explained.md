@@ -147,5 +147,6 @@ A tighter crop (e.g. waist up) would have lost the low-angle "giant beside the t
 | Too orange (indoor) | auto-fix usually handles it; else `--temperature -0.2` |
 | Too blue (shade, overcast) | `--temperature 0.2` |
 | Colors look dull | `--vibrance 0.3` |
+| Neon sign glows into a blur, letters unreadable | Auto now keeps neon scenes dark. If still blurry: `--highlights -0.3 --saturation -0.15`. When shooting: tap the sign, slide the sun icon down. |
 | Grainy night photo | `--preset night` or `--noise-reduction 0.6` |
 | Skin looks rough | `--preset portrait` or `--clarity -0.2` |

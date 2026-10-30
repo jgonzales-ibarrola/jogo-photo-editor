@@ -35,6 +35,7 @@ Output name: `<original name>_<preset>.<format>`, e.g. `IMG_0412_vivid.jpg`.
 | `--preview` | Fast 2048px version. Use to check a look before the slow full-size edit. |
 | `--no-auto` | Skip auto-fix. Only the preset and your sliders are applied. |
 | `--keep-location` | Keep GPS location in the saved file (it's removed by default). |
+| `--flat-raw` | ProRAW only. Decode the raw data instead of starting from Apple's finished photo inside the DNG. Flatter; use only to rescue blown or very dark shots. |
 | `--exposure N` … `--vignette N` | Sliders. See below. |
 
 ### `try` — compare every preset
@@ -136,6 +137,10 @@ Command-line options always win over this file.
 | `tropical` | Sunny Philippines: turquoise shadows, golden highlights. |
 | `cinematic` | Movie look: teal shadows, warm highlights. Dramatic. |
 | `film` | Soft film: faded blacks, muted warm colors. |
+| `amber` | Like the iPhone Amber style: warm amber, deep rich contrast. Streets, buildings. |
+| `gold` | Like the iPhone Gold style: warm golden glow, a bit brighter. Travel, landmarks, people. |
+| `rose-gold` | Like the iPhone Rose Gold style: warm with a soft pink-red. Portraits, skin. |
+| `bright` | Like the iPhone Bright style: lighter, more vivid, clean blacks. Everyday. |
 
 ### Your own presets
 
