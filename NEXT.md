@@ -24,22 +24,21 @@ and how close our looks are. It's for knowledge and rules, not for training an A
 Script: [research/fivek.py](research/fivek.py). Data: `research/data/fivek/` (git-ignored, research
 license: never commit or republish the photos).
 
-The download runs as its own Windows process (started 2026-11-01 ~12:50). MIT's server is slow,
-about 1.2 MB/s, so 300 photos take ~16 hours. It resumes where it stopped.
+Download finished 2026-11-01 (300/300). `measure` started 2026-11-01 ~14:25 as its own Windows
+process, ~35 s per photo, ~3 hours. It saves after each photo and resumes when rerun.
 
 ```powershell
-.venv\Scripts\python research/fivek.py status          # progress
-# If it's not running any more (PC restarted) and status < 300, restart it:
-Start-Process .venv\Scripts\python.exe -ArgumentList 'research/fivek.py','fetch','--n','300','--workers','8' -WindowStyle Hidden -RedirectStandardOutput research/data/fivek/fetch.log -RedirectStandardError research/data/fivek/fetch.err
-# Check if it's running:
-Get-CimInstance Win32_Process -Filter "Name='python.exe'" | Where-Object CommandLine -match 'fivek.py fetch'
+Get-Content research/data/fivek/measure.log -Tail 3        # progress: [n/300]
+# Running? (if not, and the log stops before 300, just restart it: it resumes)
+Get-CimInstance Win32_Process -Filter "Name='python.exe'" | Where-Object CommandLine -match 'fivek.py measure'
+Start-Process .venv\Scripts\python.exe -ArgumentList 'research/fivek.py','measure' -WindowStyle Hidden -RedirectStandardOutput research/data/fivek/measure.log -RedirectStandardError research/data/fivek/measure.err
 ```
 
 ### Steps
 
-1. [ ] Download: at ~100 complete, do steps 2–3 once (first look); at 300, redo them.
-2. [ ] `python research/fivek.py measure` then `report` (measure skips unfinished photos).
-       Not run yet on real data: check it works on a few photos first, fix bugs.
+1. [x] Download 300 photos (fetch checks file size and handles names with spaces).
+2. [ ] `measure` (running), then `python research/fivek.py report`. `report` hasn't run on real
+       data yet: check its output makes sense, fix bugs.
 3. [ ] Write findings into docs/08 ("What we measured"): per scene, expert average vs input vs our
        looks; which look is closest; where we're off (too bright? too colorful? wrong tint?).
 4. [ ] Update the scene -> look table in docs/09 from the data, and tune presets toward the expert

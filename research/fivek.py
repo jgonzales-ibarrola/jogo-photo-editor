@@ -18,6 +18,7 @@ import html
 import random
 import re
 import sys
+import urllib.parse
 import urllib.request
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
@@ -94,9 +95,14 @@ def sample(rows: list[dict], n: int, seed: int = 7) -> list[dict]:
 
 def _download(url: str, dest: Path) -> None:
     tmp = dest.with_suffix(dest.suffix + ".part")
+    url = urllib.parse.quote(url, safe=":/")  # some names have spaces
     with urllib.request.urlopen(url, timeout=600) as r, open(tmp, "wb") as f:
+        expected = int(r.headers.get("Content-Length") or 0)
         while chunk := r.read(1 << 20):
             f.write(chunk)
+    if expected and tmp.stat().st_size != expected:  # the server sometimes ends a transfer early
+        tmp.unlink()
+        raise IOError(f"incomplete download ({url.rsplit('/', 1)[-1]}), rerun fetch to retry")
     tmp.replace(dest)
 
 
@@ -188,28 +194,32 @@ def stats(img: np.ndarray) -> dict[str, float]:
 
 def cmd_measure(args) -> None:
     import tifffile
+    import time
     presets = load_presets(cli.USER_PRESETS)
-    rows = []
+    out = DATA / "stats.csv"
+    fields = ["name", "subject", "light", "location", "time", "source"] + STATS
+    done = {r["name"] for r in csv.DictReader(open(out, encoding="utf-8"))} if out.exists() and not args.fresh else set()
+    if not done:
+        with open(out, "w", newline="", encoding="utf-8") as f:
+            csv.DictWriter(f, fieldnames=fields).writeheader()
     sample_rows = list(csv.DictReader(open(DATA / "sample.csv", encoding="utf-8")))
     for i, r in enumerate(sample_rows, 1):
         d = DATA / "photos" / r["name"]
-        if not all((d / f"expert_{e}.tif").exists() for e in EXPERTS):
+        if r["name"] in done or not all((d / f"expert_{e}.tif").exists() for e in EXPERTS):
             continue
-        base = files.resize_long_edge(files.load(d / "input.dng").pixels, EDGE)
+        t = time.perf_counter()
+        base =files.resize_long_edge(files.load(d / "input.dng").pixels, EDGE)
         versions = {"input": base}
         for e in EXPERTS:
             versions[f"expert_{e}"] = tifffile.imread(d / f"expert_{e}.tif").astype(np.float32) / 65535
         for name, p in presets.items():
             versions[f"look_{name}"] = cli.edit_pixels(base.copy(), p.settings)
-        for source, img in versions.items():
-            rows.append({"name": r["name"], "subject": r["subject"], "light": r["light"],
-                         "location": r["location"], "time": r["time"], "source": source, **stats(img)})
-        print(f"[{i}/{len(sample_rows)}] {r['name']}", flush=True)
-    with open(DATA / "stats.csv", "w", newline="", encoding="utf-8") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0]))
-        w.writeheader()
-        w.writerows(rows)
-    print(f"-> {DATA / 'stats.csv'}")
+        rows = [{"name": r["name"], "subject": r["subject"], "light": r["light"], "location": r["location"],
+                 "time": r["time"], "source": source, **stats(img)} for source, img in versions.items()]
+        with open(out, "a", newline="", encoding="utf-8") as f:  # saved per photo: a rerun resumes
+            csv.DictWriter(f, fieldnames=fields).writerows(rows)
+        print(f"[{i}/{len(sample_rows)}] {r['name']}  {time.perf_counter() - t:.0f}s", flush=True)
+    print(f"-> {out}")
 
 
 # ---------- report ----------
@@ -276,7 +286,9 @@ def main() -> None:
     f.add_argument("--n", type=int, default=300)
     f.add_argument("--workers", type=int, default=4)
     f.set_defaults(f=cmd_fetch)
-    sub.add_parser("measure").set_defaults(f=cmd_measure)
+    m = sub.add_parser("measure")
+    m.add_argument("--fresh", action="store_true", help="Start over instead of resuming.")
+    m.set_defaults(f=cmd_measure)
     sub.add_parser("report").set_defaults(f=cmd_report)
     args = p.parse_args()
     args.f(args)
