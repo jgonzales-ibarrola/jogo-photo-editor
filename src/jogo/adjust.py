@@ -123,6 +123,76 @@ def _skin(hue: np.ndarray, sat: np.ndarray, v: np.ndarray) -> np.ndarray:
         (v - 0.15) / 0.15, 0, 1)
 
 
+# The vectorscope skin tone line is the YIQ "I" axis. In RGB that is R = Y+0.956I, G = Y-0.272I,
+# B = Y-1.106I, so its HSV hue is 60 * (G-B)/(R-B) = 60 * 0.834/2.062 = about 24 degrees.
+SKIN_LINE_HUE = 24.3
+SKIN_MAX_SHIFT = 6.0  # degrees: a nudge, never a repaint.
+FACE_EDGE = 1024      # faces are found on a copy this size (long edge)
+
+
+def find_faces(img: np.ndarray) -> list[tuple[float, float, float, float]]:
+    """Face boxes as fractions of the photo (x, y, w, h). Empty if OpenCV is missing.
+    Skin is judged only on faces: sand, mud and wood have the same hue as skin."""
+    try:
+        import cv2
+        cv2.CascadeClassifier  # removed in OpenCV 5
+    except (ImportError, AttributeError):
+        return []
+    step = max(1, max(img.shape[:2]) // FACE_EDGE)
+    gray = (np.clip(luminance(img[::step, ::step]), 0, 1) * 255).astype(np.uint8)
+    gh, gw = gray.shape
+    boxes = []
+    for name in ("haarcascade_frontalface_default.xml", "haarcascade_profileface.xml"):
+        found = cv2.CascadeClassifier(cv2.data.haarcascades + name).detectMultiScale(
+            gray, scaleFactor=1.1, minNeighbors=6, minSize=(max(24, gw // 40),) * 2)
+        boxes += [(x / gw, y / gh, w / gw, h / gh) for x, y, w, h in found]
+    return boxes
+
+
+def skin_line_check(img: np.ndarray, faces: list) -> float:
+    """Hue shift in degrees that moves face skin halfway to the skin tone line. 0 if no faces."""
+    h, w = img.shape[:2]
+    hues = []
+    for fx, fy, fw, fh in faces:
+        # Middle of the face box: cheeks and nose, not hair or background.
+        y0, y1 = int((fy + fh * 0.3) * h), int((fy + fh * 0.8) * h)
+        x0, x1 = int((fx + fw * 0.2) * w), int((fx + fw * 0.8) * w)
+        step = max(1, (y1 - y0) // 64)
+        hue, sat, v = _to_hsv(np.clip(img[y0:y1:step, x0:x1:step], 0, 1))
+        hues.append(hue[_skin(hue, sat, v) > 0.5])
+    hues = np.concatenate(hues) if hues else np.empty(0)
+    if hues.size < 50:
+        return 0.0
+    shift = float(np.clip((SKIN_LINE_HUE - float(np.median(hues))) * 0.5, -SKIN_MAX_SHIFT, SKIN_MAX_SHIFT))
+    return shift if abs(shift) >= 1.0 else 0.0
+
+
+def _face_region(h: int, w: int, faces: list, grid: int = 256) -> np.ndarray:
+    """Soft 0..1 map on a small grid: faces grown to include neck and ears, blurred at the edges."""
+    gh, gw = (grid, max(1, grid * w // h)) if h >= w else (max(1, grid * h // w), grid)
+    region = np.zeros((gh, gw), dtype=np.float32)
+    for fx, fy, fw, fh in faces:
+        x0, x1 = int((fx - fw * 0.4) * gw), int((fx + fw * 1.4) * gw)
+        y0, y1 = int((fy - fh * 0.3) * gh), int((fy + fh * 1.8) * gh)
+        region[max(y0, 0):max(y1, 0), max(x0, 0):max(x1, 0)] = 1.0
+    return np.clip(ndimage.gaussian_filter(region, sigma=3), 0, 1)
+
+
+def shift_skin(img: np.ndarray, degrees: float, faces: list) -> np.ndarray:
+    """Rotate the hue of skin-colored pixels near faces only. In place."""
+    h, w = img.shape[:2]
+    region = _face_region(h, w, faces)
+    rows = np.arange(h) * region.shape[0] // h
+    cols = np.arange(w) * region.shape[1] // w
+    for y0 in range(0, h, CHUNK_ROWS):
+        strip = img[y0:y0 + CHUNK_ROWS]
+        near = region[rows[y0:y0 + CHUNK_ROWS]][:, cols]
+        hue, sat, v = _to_hsv(strip)
+        _from_hsv(hue + degrees * _skin(hue, sat, v) * near, sat, v, strip)
+        np.clip(strip, 0.0, 1.0, out=strip)
+    return img
+
+
 def _color_strip(img: np.ndarray, hsl: np.ndarray, grades: list, protect_skin: float) -> None:
     hue, sat, v = _to_hsv(img)
     if hsl.any():

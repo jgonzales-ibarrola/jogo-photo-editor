@@ -1,4 +1,4 @@
-"""Command line: jogo edit | try | info | presets."""
+"""Command line: jogo edit | try | grid | info | score | presets."""
 
 from __future__ import annotations
 
@@ -46,7 +46,18 @@ def edit_pixels(img: np.ndarray, settings: Settings, manual: dict[str, float] | 
             for note in analysis.notes:
                 print(f"    auto: {note}")
     final = final.plus(manual or {})
-    return adjust.apply(img, final, analysis.wb_gains if analysis else None)
+    img = adjust.apply(img, final, analysis.wb_gains if analysis else None)
+    # Checked after the look, because the look's color mixer and grade can move skin too.
+    if settings.auto and settings.auto_skin:
+        faces = adjust.find_faces(img)
+        shift = adjust.skin_line_check(img, faces)
+        if shift:
+            adjust.shift_skin(img, shift, faces)
+            if verbose:
+                way = "yellow" if shift < 0 else "red/pink"
+                print(f"    auto: Skin on {len(faces)} face(s) was too {way} -> hue {shift:+.1f} deg "
+                      "toward the skin tone line.")
+    return img
 
 
 def process(path: Path, settings: Settings, manual: dict[str, float], crop: str = "",
@@ -193,6 +204,52 @@ def cmd_info(args: argparse.Namespace, prefs: dict) -> int:
     return 0
 
 
+def _original_of(edited: Path, originals: list[Path]) -> Path | None:
+    """photos/out/.../IMG_0185_gold.jpg -> photos/in/IMG_0185.JPG (longest matching stem)."""
+    matches = [o for o in originals if edited.stem.startswith(o.stem + "_")]
+    return max(matches, key=lambda o: len(o.stem)) if matches else None
+
+
+def cmd_score(args: argparse.Namespace, prefs: dict) -> int:
+    """Average-person aesthetic score (1-10) per photo, best first. Optionally compare with the original."""
+    from . import score
+    if not score.available():
+        print("Scoring needs PyTorch + pyiqa. Install with: .venv\\Scripts\\python -m pip install -e .[score]",
+              file=sys.stderr)
+        return 2
+    photos = _collect(args.paths, prefs["output_dir"])
+    if not photos:
+        print("No photos found.")
+        return 1
+    originals = _collect([args.vs], "") if args.vs else []
+
+    rows = []
+    for i, path in enumerate(photos, 1):
+        print(f"[{i}/{len(photos)}] {path.name}", file=sys.stderr)
+        s = score.score_file(path)
+        orig = _original_of(path, originals) if originals else None
+        before = score.score_file(orig)["mean"] if orig else None
+        rows.append((path, s, before))
+
+    rows.sort(key=lambda r: r[1]["mean"], reverse=True)
+    names = " ".join(f"{m:>9}" for m in score.MODELS)
+    print(f"\n{'#':>3}  {'score':>5}  {names}  {'vs original':<26} photo")
+    for rank, (path, s, before) in enumerate(rows, 1):
+        per = " ".join(f"{s[m]:9.2f}" for m in score.MODELS)
+        vs = f"{s['mean'] - before:+.2f} {score.verdict(before, s['mean'])}" if before is not None else ""
+        print(f"{rank:>3}  {s['mean']:5.2f}  {per}  {vs:<26} {path.name}")
+    if args.csv:
+        with open(args.csv, "w", encoding="utf-8") as f:
+            f.write("photo,score," + ",".join(score.MODELS) + ",original\n")
+            for path, s, before in rows:
+                f.write(f"{path.name},{s['mean']}," + ",".join(str(s[m]) for m in score.MODELS)
+                        + f",{'' if before is None else before}\n")
+        print(f"Saved {args.csv}")
+    print(f"\nScore = average of {', '.join(score.MODELS)} (trained on human ratings, docs/08). "
+          f"Differences under {score.NOISE} are a tie.")
+    return 0
+
+
 def cmd_presets(args: argparse.Namespace, prefs: dict) -> int:
     for name, preset in load_presets(USER_PRESETS).items():
         mark = " (default)" if name == prefs["preset"] else ""
@@ -247,6 +304,12 @@ def build_parser() -> argparse.ArgumentParser:
     i = sub.add_parser("info", help="Show camera settings and what's wrong/right with a photo.")
     i.add_argument("photo")
     i.set_defaults(func=cmd_info)
+
+    sc = sub.add_parser("score", help="Score photos 1-10 by average human taste (needs the [score] extra).")
+    sc.add_argument("paths", nargs="*", help="Files or folders. Default: output_dir.")
+    sc.add_argument("--vs", help="Folder of originals (e.g. photos/in) to compare each edit with.")
+    sc.add_argument("--csv", help="Also save the table to this CSV file.")
+    sc.set_defaults(func=cmd_score)
 
     ps = sub.add_parser("presets", help="List available presets.")
     ps.set_defaults(func=cmd_presets)

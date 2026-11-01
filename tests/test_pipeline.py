@@ -126,6 +126,24 @@ def test_crop_position():
     assert adjust.crop_box(800, 600, "1:1", "0.5,1") == (0, 200, 600, 600)
 
 
+def test_skin_line_moves_yellow_face_but_not_skin_colored_ground():
+    img = np.full((200, 200, 3), [0.80, 0.62, 0.45], dtype=np.float32)  # all skin-colored, too yellow
+    start = adjust._to_hsv(img[:1, :1])[0][0, 0]  # ~29 deg; the skin line is ~24
+    face = [(0.1, 0.1, 0.2, 0.2)]  # a face box in the top-left corner
+    shift = adjust.skin_line_check(img, face)
+    assert shift < -2
+    adjust.shift_skin(img, shift, face)
+    face_hue = adjust._to_hsv(img[40:41, 40:41])[0][0, 0]
+    ground_hue = adjust._to_hsv(img[190:191, 190:191])[0][0, 0]
+    assert face_hue < start - 1.5            # face moved toward the skin line
+    assert abs(ground_hue - start) < 0.01    # far from the face: mud/sand stays as it was
+
+
+def test_skin_line_needs_a_face():
+    img = np.full((60, 60, 3), [0.80, 0.62, 0.45], dtype=np.float32)
+    assert adjust.skin_line_check(img, []) == 0.0
+
+
 def test_crop_zoom_keeps_smaller_box_placed_by_pos():
     assert adjust.crop_box(1000, 800, "4:5", "center", 0.8) == (80, 100, 640, 800)
     assert adjust.crop_box(1000, 800, "4:5", "0,1", 0.5) == (0, 500, 400, 500)

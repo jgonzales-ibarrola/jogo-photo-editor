@@ -31,6 +31,7 @@ Output name: `<original name>_<preset>.<format>`, e.g. `IMG_0412_vivid.jpg`.
 | `-q, --quality 1-100` | JPG/HEIC quality. 92 is visually identical to 100 at half the file size. |
 | `--crop RATIO` | Center crop. `4:5` Instagram portrait, `1:1` square, `16:9` wide/YouTube, `9:16` Stories/Reels, `3:2` classic photo. |
 | `--crop-pos POS` | Which part the crop keeps: `center`, `top`, `bottom`, `left`, `right`, or `"x,y"` (0–1). See [06](06-composition-and-crop.md). |
+| `auto_skin` (preset/toml) | `true` by default. After the look, faces are found and their skin hue is moved half way to the skin tone line (max 6°). |
 | `--crop-zoom N` | Crop tighter. `0.8` keeps 80% of the width and height. With `--crop-pos "x,y"` it moves the subject onto a thirds line. Default `1`. |
 | `--resize PIXELS` | Longest side in pixels. `2048` for Facebook/Instagram. `0` keeps full size. |
 | `--preview` | Fast 2048px version. Use to check a look before the slow full-size edit. |
@@ -56,6 +57,17 @@ python -m jogo grid photos\in\IMG_0412.HEIC --crop 4:5 --crop-pos bottom
 Draws rule-of-thirds (white), golden-ratio (yellow) and diagonal (cyan) lines on a small copy.
 With `--crop`, the part that would be cut is darkened. Pick lines with `--guides thirds,golden`.
 How to read it: [06 Composition and crop](06-composition-and-crop.md).
+
+### `score` — how much most people would like it
+
+```
+python -m jogo score photos\out\cagsawa-family\post --vs photos\in --csv scores.csv
+```
+
+Scores each photo 1–10 with three models trained on human ratings (NIMA, MUSIQ, LAION; see
+[08](08-references.md)), best first. `--vs` compares each edit with its original. Differences under
+0.15 are a tie. Good for choosing which photos to post; it barely notices small grading changes.
+Needs the extra install: `.venv\Scripts\python -m pip install -e .[score]` (about 1 GB).
 
 ### `info` — photo check-up
 

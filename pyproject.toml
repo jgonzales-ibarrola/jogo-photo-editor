@@ -16,10 +16,12 @@ dependencies = [
     "pillow-heif>=0.16",
     "rawpy>=0.21",
     "tifffile>=2023.1",
+    "opencv-python-headless>=4.8,<5",  # face detection for the skin tone check
 ]
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]
+score = ["torch>=2.4", "torchvision>=0.19", "pyiqa>=0.1.13"]
 
 [project.scripts]
 jogo = "jogo.cli:main"

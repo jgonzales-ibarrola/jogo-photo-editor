@@ -28,6 +28,7 @@ class Settings:
     auto: bool = True            # Analyze the photo and fix exposure, levels and white balance.
     auto_wb: bool = True         # Let auto correct color casts. Turn off for sunsets.
     auto_strength: float = 1.0   # 0..1, how much of the auto fix to apply.
+    auto_skin: bool = True       # After the look, nudge skin back toward the skin tone line (docs/08).
     exposure: float = 0.0
     temperature: float = 0.0
     tint: float = 0.0

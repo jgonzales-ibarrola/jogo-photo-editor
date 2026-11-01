@@ -19,9 +19,10 @@ Two tracks that grow together: **the tool** and **you**.
 - [ ] Research to improve looks: tune presets against more reference photos (owner will send), sunny-day tests,
       use Apple's semantic masks in ProRAW (sky/skin/people) for local edits, check open LUT licenses
 - [x] Reference library with sources for every rule: [docs/08](docs/08-references.md) (2026-11-01)
-- [ ] Score edits with NIMA (model trained on ~255k photos rated by ~200 people each) to pick looks and best shots
+- [x] `jogo score`: NIMA + MUSIQ + LAION (trained on human ratings) to pick the best shots (2026-11-01)
 - [ ] Compare presets with MIT-Adobe FiveK Expert C (5,000 photos edited by pros)
-- [ ] Skin tone line check: nudge skin hue onto the standard skin line
+- [ ] Adaptive color grade: the look reacts to the colors already in the photo
+- [x] Skin tone line check on detected faces (2026-11-01)
 - [x] `--crop-zoom`: tighter crops so the subject can sit on a thirds line (2026-11-01)
 - [ ] Auto straighten using the horizon
 - [x] Crop position (`--crop-pos`) and composition grids (`grid` command)

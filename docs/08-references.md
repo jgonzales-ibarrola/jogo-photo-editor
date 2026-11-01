@@ -99,6 +99,19 @@ Our pipeline (`adjust.apply`) already follows this order.
 - https://site.creativelive.com/class/portrait-photography-bootcamp-with-lindsay-adler/lessons/cropping-composition
 - https://expertphotography.com/cropping-photos-portraits
 
+## What we measured ourselves
+
+**2026-11-01, cagsawa-family (46 photos), `jogo score --vs photos/in`:**
+- Our edit vs the original: 45 of 46 were a tie (difference under 0.15). One was slightly better.
+- So the AVA models barely notice grading. They judge the *photo*: subject, composition, scene.
+- Ranking: wide shots with two people + Mayon + sign scored highest (5.6). Close portraits and food
+  scored lowest (4.5–4.8). AVA comes from photo-contest voters, who like scenes more than snapshots.
+- Use: **score = which photos to post.** For *how to grade*, use expert edits (FiveK), not AVA.
+
+**Skin tone line on faces** (OpenCV face detection, then cheek hue):
+- Portraits were already close: 1–2 degrees off. ATV riders in helmets: about 4 degrees.
+- Without face detection, mud in 0185 counted as "skin". That's why the check only looks at faces.
+
 ## How our tool matches the sources
 
 | Rule | Source | Tool today |
@@ -106,10 +119,10 @@ Our pipeline (`adjust.apply`) already follows this order.
 | Base first, look last | Guides | Yes, `adjust.apply` order |
 | Bright, not over-saturated | Curalate, your feedback | Yes, looks toned down 2026-10-31 |
 | Small skin moves, protect skin | Skin guides | Yes for vibrance and grading. Not yet for temperature |
-| Skin on the skin tone line | Vectorscope guides | No. To add |
+| Skin on the skin tone line | Vectorscope guides | Yes, on detected faces (2026-11-01) |
 | No crops at joints, eyes on top third | Crop guides | Claude checks by eye. Not automatic |
 | Empty background space helps | Curalate | Don't over-crop travel shots (docs/06) |
-| Score edits against average taste | AVA / NIMA | No. To add |
+| Score edits against average taste | AVA / NIMA | Yes, `jogo score`. Good for picking photos, not grades |
 
 ## Next steps
 

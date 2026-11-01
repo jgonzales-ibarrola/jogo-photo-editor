@@ -63,7 +63,9 @@ Legend: `[x]` built   `[~]` partly built / done by Claude by eye   `[ ]` planned
  [~] BLOCK 5        │  PROTECT                           │
      adjust.py      │  [x] skin: vibrance + grade skip   │
                     │  [ ] skin: temperature skip        │
-                    │  [ ] skin on the skin tone line    │  research: all skin = one hue
+                    │  [x] skin on the skin tone line    │  research: all skin = one hue (24 deg)
+                    │      faces found -> measure cheeks │  only near faces: mud/sand/wood
+                    │      -> move half way, max 6 deg   │  have skin's hue too
                     │  [~] neon: keep letters readable   │
                     │  [ ] sky / faces local edits       │  Apple masks in ProRAW
                     └─────────────────┬──────────────────┘
@@ -83,9 +85,10 @@ Legend: `[x]` built   `[~]` partly built / done by Claude by eye   `[ ]` planned
                     └─────────────────┬──────────────────┘
                                       │
                     ┌─────────────────▼──────────────────┐
- [ ] BLOCK 8        │  SCORE  (NIMA, average human 1-10) │  research: AVA, ~200 raters/photo
-                    │  score < before? -> try next look  │
-                    │  pick best photos to post by score │
+ [x] BLOCK 8        │  SCORE  `jogo score` (1-10)        │  research: AVA, ~200 raters/photo
+     score.py       │  mean of nima, musiq-ava, laion    │
+                    │  rank photos -> which to post      │  good at: which PHOTO is better
+                    │  edit vs original -> < 0.15 = tie  │  weak at: which GRADE is better
                     └─────────────────┬──────────────────┘
                                       │
                     ┌─────────────────▼──────────────────┐
@@ -131,4 +134,4 @@ The look is chosen by **light + subject**, not by time of day.
 - Blocks 2 and 6 are decided by Claude looking at thumbnails. They're written here so they're the
   same every time, and so they can be automated later.
 - Block 4 is a fixed recipe per look. The *base fix* (block 3) adapts to each photo; the *grade* doesn't yet.
-- Block 8 doesn't exist yet. Until it does, "best photo" is Claude's judgment.
+- Block 8 ranks photos for posting. It can't judge small grading changes (see docs/08, "What we measured").
