@@ -8,14 +8,19 @@ from importlib import resources
 from pathlib import Path
 
 # Every slider goes from -1 to +1 and 0 means "no change", except exposure (in EV stops).
+# Color mixer (HSL) bands and their center on the color wheel, like Lightroom's Color Mixer.
+HSL_BANDS = {"red": 0, "orange": 30, "yellow": 60, "green": 120, "aqua": 180, "blue": 225, "purple": 270,
+             "magenta": 315}
+HSL_SLIDERS = tuple(f"{band}_{part}" for band in HSL_BANDS for part in ("hue", "sat", "lum"))
+
 SLIDERS = (
     "exposure", "temperature", "tint", "contrast", "highlights", "shadows",
     "whites", "blacks", "clarity", "vibrance", "saturation",
-    "sharpen", "noise_reduction", "vignette", "grade_shadows", "grade_highlights",
-)
+    "sharpen", "noise_reduction", "vignette", "grade_shadows", "grade_midtones", "grade_highlights",
+) + HSL_SLIDERS
 # Color grading hues are angles on the color wheel (0 red, 30 orange, 60 yellow, 120 green,
 # 180 cyan/teal, 210 blue, 300 magenta). They replace, not add.
-HUES = ("grade_shadows_hue", "grade_highlights_hue")
+HUES = ("grade_shadows_hue", "grade_midtones_hue", "grade_highlights_hue")
 
 
 @dataclass(frozen=True)
@@ -39,8 +44,37 @@ class Settings:
     vignette: float = 0.0
     grade_shadows: float = 0.0         # 0..1, how strongly to tint the shadows
     grade_shadows_hue: float = 200.0   # tint color for shadows (default: teal-blue)
+    grade_midtones: float = 0.0        # 0..1, keep small: midtones hold skin
+    grade_midtones_hue: float = 40.0
     grade_highlights: float = 0.0      # 0..1, how strongly to tint the highlights
     grade_highlights_hue: float = 40.0 # tint color for highlights (default: warm orange)
+    protect_skin: float = 0.7          # 0..1, how much vibrance and color grading skip skin tones
+    # Color mixer: <band>_hue shifts toward the next color (+) or the previous one (-), <band>_sat and
+    # <band>_lum change saturation and brightness of that color only. All -1..1.
+    red_hue: float = 0.0
+    red_sat: float = 0.0
+    red_lum: float = 0.0
+    orange_hue: float = 0.0
+    orange_sat: float = 0.0
+    orange_lum: float = 0.0
+    yellow_hue: float = 0.0
+    yellow_sat: float = 0.0
+    yellow_lum: float = 0.0
+    green_hue: float = 0.0
+    green_sat: float = 0.0
+    green_lum: float = 0.0
+    aqua_hue: float = 0.0
+    aqua_sat: float = 0.0
+    aqua_lum: float = 0.0
+    blue_hue: float = 0.0
+    blue_sat: float = 0.0
+    blue_lum: float = 0.0
+    purple_hue: float = 0.0
+    purple_sat: float = 0.0
+    purple_lum: float = 0.0
+    magenta_hue: float = 0.0
+    magenta_sat: float = 0.0
+    magenta_lum: float = 0.0
 
     def plus(self, other: dict[str, float]) -> "Settings":
         """Add slider values on top of these settings (used to stack auto + preset + manual)."""

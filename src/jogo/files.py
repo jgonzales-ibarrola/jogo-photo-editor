@@ -25,7 +25,24 @@ ORIENTATION = 0x0112
 BASIC_TAGS = (0x010F, 0x0110, 0x0131, 0x0132)
 BASIC_EXIF_TAGS = (0x829A, 0x829D, 0x8827, 0x9003, 0x920A, 0xA405, 0xA434)
 
-SRGB_ICC = ImageCms.ImageCmsProfile(ImageCms.createProfile("sRGB")).tobytes()
+SRGB_PROFILE = ImageCms.createProfile("sRGB")
+SRGB_ICC = ImageCms.ImageCmsProfile(SRGB_PROFILE).tobytes()
+
+
+def _to_srgb(im: Image.Image, icc: bytes | None) -> tuple[Image.Image, bytes | None]:
+    """iPhone photos are Display P3, a wider color space than sRGB. Edits happen in sRGB and are saved
+    as sRGB: Windows viewers often ignore the P3 tag (photo looks duller there) while the iPhone uses it
+    (same photo looks much more saturated). sRGB looks the same everywhere, incl. Instagram/Facebook."""
+    if not icc or im.mode != "RGB":
+        return im, icc
+    try:
+        src = ImageCms.ImageCmsProfile(io.BytesIO(icc))
+        if "srgb" in ImageCms.getProfileDescription(src).lower():
+            return im, icc
+        out = ImageCms.profileToProfile(im, src, SRGB_PROFILE, ImageCms.Intent.RELATIVE_COLORIMETRIC)
+        return out, SRGB_ICC
+    except Exception:
+        return im, icc
 
 
 def baseline_exposure(path: Path) -> float:
@@ -90,8 +107,9 @@ def load(path: Path, flat_raw: bool = False) -> Loaded:
                 exif = _basic_exif(src.getexif())
         except Exception:
             pass
-        pixels = np.asarray(im.convert("RGB"), dtype=np.float32) / 255.0
-        return Loaded(np.ascontiguousarray(pixels), exif, im.info.get("icc_profile"), "raw-apple")
+        rgb, icc = _to_srgb(im.convert("RGB"), im.info.get("icc_profile"))
+        pixels = np.asarray(rgb, dtype=np.float32) / 255.0
+        return Loaded(np.ascontiguousarray(pixels), exif, icc, "raw-apple")
     if ext in RAW_EXTS:
         with rawpy.imread(str(path)) as raw:
             rgb = raw.postprocess(
@@ -123,7 +141,8 @@ def load(path: Path, flat_raw: bool = False) -> Loaded:
             arr = np.asarray(im, dtype=np.float32) / 65535.0
             pixels = np.repeat(arr[..., None], 3, axis=2)
         else:
-            pixels = np.asarray(im.convert("RGB"), dtype=np.float32) / 255.0
+            rgb, icc = _to_srgb(im.convert("RGB"), icc)
+            pixels = np.asarray(rgb, dtype=np.float32) / 255.0
     return Loaded(np.ascontiguousarray(pixels), exif, icc, "image")
 
 

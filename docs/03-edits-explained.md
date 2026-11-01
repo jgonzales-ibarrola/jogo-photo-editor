@@ -46,17 +46,33 @@ Indoor lights make photos orange. Shade makes them blue. Fluorescent lights can 
 Temperature fixes orange↔blue. Tint fixes green↔magenta.
 Don't "fix" sunsets: the orange is the point. Use `golden-hour`, which turns auto white balance off.
 
-**Vibrance** — boosts the dull colors more than the strong ones, and goes easy on skin.
+**Vibrance** — boosts the dull colors more than the strong ones, and mostly skips skin (`protect_skin`).
 This is the safe color slider. Use it first.
 
 **Saturation** — boosts every color equally.
 Too much: skin turns orange, skies turn neon. Usually keep it at 0. Use −1 for black and white.
 
+**Color mixer (HSL)** — change one color without touching the others: its hue (which color), saturation
+(how strong) and luminance (how light). This is the main tool professionals use to make colors look "expensive".
+
+| Color | Common pro move | Why |
+|---|---|---|
+| Green | hue toward yellow a little, saturation −0.3, luminance −0.1 | Tropical leaves look neon on phones. Olive greens look calm and rich. |
+| Yellow | saturation −0.1 to −0.2 | Yellow-green leaves are the loudest color in most travel shots. |
+| Blue | hue toward aqua a little, saturation +0.1, luminance −0.2 | A deeper, slightly teal sky. |
+| Orange | saturation −0.05 to −0.1, luminance +0.1 | Skin is orange. Slightly less saturated and lighter = clean, healthy skin. Don't move its hue much. |
+| Red | saturation −0.1 | Red signs and paint lines grab attention away from people. |
+
+Order matters: white balance first, then the mixer, then color grading last.
+
 **Color grading** — tint the shadows one color and the highlights another. This is what gives
 movies and Instagram creators a recognizable "look". It changes the mood, not the brightness.
 
 - `--grade-shadows 0..1` + `--grade-shadows-hue DEG` — how strong, and which color, in the dark parts.
+- `--grade-midtones 0..1` + `--grade-midtones-hue DEG` — the middle tones. Keep it under 0.1: skin lives here.
 - `--grade-highlights 0..1` + `--grade-highlights-hue DEG` — the same for the bright parts.
+- Grading mostly skips skin tones (`protect_skin`, 0.7 by default), so faces stay natural while skies and walls take the color.
+- Opposite colors on the wheel look good together: warm (orange, gold) highlights + cool (teal, blue) shadows.
 - Hue is a position on the color wheel: **0** red, **30** orange, **50** golden yellow, **120** green,
   **180** cyan/teal, **210** blue, **270** purple, **330** pink.
 
@@ -68,6 +84,8 @@ Classic combinations:
 | Tropical / sunny | turquoise (180–190) | golden (45–55) | `tropical` |
 | Film / nostalgic | green-teal (160–175), weak | warm (40–50), weak | `film` |
 | Bright and clean | — | warm glow (45), weak | `airy` |
+| Golden travel | soft teal (200), weak | gold (50) | `gold` |
+| Pro travel / editorial | teal (195) | warm (42) | `editorial` |
 | Cool, moody | blue (210–220) | none or slight blue | — |
 
 Keep it subtle: 0.2–0.4. If skin turns green or orange, it's too much.
@@ -147,6 +165,7 @@ A tighter crop (e.g. waist up) would have lost the low-angle "giant beside the t
 | Too orange (indoor) | auto-fix usually handles it; else `--temperature -0.2` |
 | Too blue (shade, overcast) | `--temperature 0.2` |
 | Colors look dull | `--vibrance 0.3` |
+| Too vivid: neon-green grass, yellow skin | `--vibrance -0.1 --green-sat -0.2 --yellow-sat -0.2` |
 | Neon sign glows into a blur, letters unreadable | Auto now keeps neon scenes dark. If still blurry: `--highlights -0.3 --saturation -0.15`. When shooting: tap the sign, slide the sun icon down. |
 | Grainy night photo | `--preset night` or `--noise-reduction 0.6` |
 | Skin looks rough | `--preset portrait` or `--clarity -0.2` |
