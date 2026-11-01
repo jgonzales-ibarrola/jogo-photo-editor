@@ -8,7 +8,7 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage
 
-from .settings import Settings
+from .settings import HSL_BANDS, Settings
 
 LUMA = np.array([0.2126, 0.7152, 0.0722], dtype=np.float32)
 GAMMA = 2.2
@@ -71,6 +71,101 @@ def _tone_lut(gain: float, s: Settings) -> np.ndarray:
     return np.clip(y, 0.0, 1.0).astype(np.float32)
 
 
+CHUNK_ROWS = 512
+_BAND_CENTERS = np.array(list(HSL_BANDS.values()), dtype=np.float32)
+HUE_SHIFT_MAX = 30.0  # degrees a hue slider at +-1 moves a color (toward its neighbor band)
+
+
+def _to_hsv(img: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Hue in degrees 0..360, saturation 0..1, value 0..1."""
+    r, g, b = img[..., 0], img[..., 1], img[..., 2]
+    v = img.max(axis=-1)
+    c = v - img.min(axis=-1)
+    sat = np.where(v > 1e-6, c / np.maximum(v, 1e-6), 0.0)
+    safe = np.maximum(c, 1e-6)
+    hue = np.where(v == r, (g - b) / safe % 6.0, np.where(v == g, (b - r) / safe + 2.0, (r - g) / safe + 4.0))
+    hue = np.where(c > 1e-6, hue * 60.0, 0.0)
+    return hue.astype(np.float32), sat.astype(np.float32), v
+
+
+def _from_hsv(hue: np.ndarray, sat: np.ndarray, v: np.ndarray, out: np.ndarray) -> None:
+    hp = (hue % 360.0) / 60.0
+    c = v * sat
+    x = c * (1.0 - np.abs(hp % 2.0 - 1.0))
+    m = v - c
+    sector = hp.astype(np.int8) % 6
+    zero = np.zeros_like(c)
+    for i, (r, g, b) in enumerate(((c, x, zero), (x, c, zero), (zero, c, x), (zero, x, c), (x, zero, c),
+                                   (c, zero, x))):
+        mask = sector == i
+        out[..., 0][mask], out[..., 1][mask], out[..., 2][mask] = r[mask], g[mask], b[mask]
+    out += m[..., None]
+
+
+def _band_weights(hue: np.ndarray) -> np.ndarray:
+    """How much each pixel belongs to each color band. Bands fade linearly into their neighbors and the
+    weights always add up to 1, so there are no hard edges between colors."""
+    centers = _BAND_CENTERS
+    n = len(centers)
+    out = np.zeros((n,) + hue.shape, dtype=np.float32)
+    for i in range(n):
+        lo, mid, hi = centers[i - 1], centers[i], centers[(i + 1) % n]
+        d = (hue - mid + 180.0) % 360.0 - 180.0  # signed distance to this band's center
+        left, right = (mid - lo) % 360.0, (hi - mid) % 360.0
+        out[i] = np.clip(np.where(d < 0, 1.0 + d / left, 1.0 - d / right), 0.0, 1.0)
+    return out
+
+
+def _skin(hue: np.ndarray, sat: np.ndarray, v: np.ndarray) -> np.ndarray:
+    """0..1: how much a pixel looks like skin (orange hue, moderate saturation, not too dark)."""
+    near = np.clip(1.0 - np.abs(hue - 25.0) / 20.0, 0.0, 1.0)
+    return near * np.clip((sat - 0.08) / 0.1, 0, 1) * np.clip((0.75 - sat) / 0.15, 0, 1) * np.clip(
+        (v - 0.15) / 0.15, 0, 1)
+
+
+def _color_strip(img: np.ndarray, hsl: np.ndarray, grades: list, protect_skin: float) -> None:
+    hue, sat, v = _to_hsv(img)
+    if hsl.any():
+        w = _band_weights(hue)
+        shift = np.tensordot(hsl[:, 0], w, axes=1) * HUE_SHIFT_MAX
+        sat_mul = 1.0 + np.tensordot(hsl[:, 1], w, axes=1)
+        # Brightness change scales with saturation, so grays and whites are never touched.
+        v_mul = 1.0 + 0.5 * np.tensordot(hsl[:, 2], w, axes=1) * np.minimum(sat * 2.0, 1.0)
+        hue = hue + shift
+        sat = np.clip(sat * sat_mul, 0.0, 1.0)
+        v = np.clip(v * v_mul, 0.0, 1.0)
+        _from_hsv(hue, sat, v, img)
+        del w, shift, sat_mul, v_mul
+    if grades:
+        lum = luminance(img)
+        keep = 1.0 - protect_skin * _skin(hue % 360.0, sat, v)
+        zones = {"shadows": (1.0 - lum) ** 2, "midtones": 4.0 * lum * (1.0 - lum) * 0.5, "highlights": lum ** 2}
+        for amount, hue_deg, zone in grades:
+            # The tint is brightness-neutral, so it changes color without darkening or brightening.
+            tint = np.array(colorsys.hsv_to_rgb((hue_deg % 360) / 360, 1.0, 1.0), dtype=np.float32)
+            tint -= tint @ LUMA
+            img += (zones[zone] * keep * np.float32(0.15 * amount))[..., None] * tint
+    np.clip(img, 0.0, 1.0, out=img)
+
+
+def _vibrance_strip(img: np.ndarray, vibrance: float, saturation: float, protect_skin: float) -> None:
+    lum = luminance(img)[..., None]
+    r, g, b = img[..., 0], img[..., 1], img[..., 2]
+    v = np.maximum(np.maximum(r, g), b)
+    c = v - np.minimum(np.minimum(r, g), b)
+    chroma = np.clip(c * 2.0, 0, 1)
+    vib = vibrance
+    if vibrance > 0 and protect_skin:
+        # Skin hues sit where red is the top channel, so hue = 60 * (g - b) / c there (no full HSV needed).
+        hue = np.where(r >= v, 60.0 * (g - b) / np.maximum(c, 1e-6), 180.0)
+        vib = vibrance * (1.0 - protect_skin * _skin(hue, c / np.maximum(v, 1e-6), v))
+    factor = np.clip(1.0 + saturation + vib - vib * chroma, 0.0, None)[..., None]
+    img -= lum
+    img *= factor.astype(np.float32)
+    img += lum
+    np.clip(img, 0.0, 1.0, out=img)
+
+
 def apply(img: np.ndarray, s: Settings, wb_gains: np.ndarray | None = None) -> np.ndarray:
     img = np.clip(img, 0.0, 1.0, out=img)
     h, w = img.shape[:2]
@@ -112,37 +207,22 @@ def apply(img: np.ndarray, s: Settings, wb_gains: np.ndarray | None = None) -> n
         _apply_lut(img, lut.astype(np.float32))
 
     # 6. Vibrance boosts dull colors more than strong ones. Saturation boosts all equally.
+    #    Like Lightroom, vibrance mostly skips skin, so faces don't turn orange/yellow.
     if s.vibrance or s.saturation:
-        lum = luminance(img)[..., None]
-        r, g, b = img[..., 0], img[..., 1], img[..., 2]
-        chroma = np.maximum(np.maximum(r, g), b)
-        chroma -= np.minimum(np.minimum(r, g), b)
-        chroma = chroma[..., None]
-        chroma *= 2.0
-        np.clip(chroma, 0, 1, out=chroma)
-        factor = np.float32(1.0 + s.saturation + s.vibrance) - np.float32(s.vibrance) * chroma
-        np.clip(factor, 0.0, None, out=factor)
-        img -= lum
-        img *= factor
-        img += lum
-        np.clip(img, 0.0, 1.0, out=img)
-        del lum, chroma, factor
+        for y0 in range(0, h, CHUNK_ROWS):
+            _vibrance_strip(img[y0:y0 + CHUNK_ROWS], s.vibrance, s.saturation, s.protect_skin)
 
-    # 6b. Color grading: tint shadows and highlights separately (e.g. teal shadows, warm highlights).
-    #     The tint is brightness-neutral, so it changes color without darkening or brightening.
-    if s.grade_shadows > 0 or s.grade_highlights > 0:
-        lum = luminance(img)
-        for amount, hue, weight in (
-            (s.grade_shadows, s.grade_shadows_hue, (1.0 - lum) ** 2),
-            (s.grade_highlights, s.grade_highlights_hue, lum ** 2),
-        ):
-            if amount > 0:
-                tint = np.array(colorsys.hsv_to_rgb((hue % 360) / 360, 1.0, 1.0), dtype=np.float32)
-                tint -= tint @ LUMA
-                weight *= np.float32(0.15 * amount)
-                img += weight[..., None] * tint
-        np.clip(img, 0.0, 1.0, out=img)
-        del lum
+    # 6b. Color mixer (one color at a time), then color grading (shadows / midtones / highlights).
+    #     Grading comes last, as in Lightroom, and mostly skips skin so faces stay natural.
+    hsl = np.array([[getattr(s, f"{b}_{p}") for p in ("hue", "sat", "lum")] for b in HSL_BANDS],
+                   dtype=np.float32)
+    grades = [(a, hue, zone) for a, hue, zone in (
+        (s.grade_shadows, s.grade_shadows_hue, "shadows"),
+        (s.grade_midtones, s.grade_midtones_hue, "midtones"),
+        (s.grade_highlights, s.grade_highlights_hue, "highlights")) if a > 0]
+    if hsl.any() or grades:
+        for y0 in range(0, h, CHUNK_ROWS):  # in strips: each needs several temporary copies
+            _color_strip(img[y0:y0 + CHUNK_ROWS], hsl, grades, s.protect_skin)
 
     # 7. Noise reduction blurs color noise (blotches). Sharpen boosts edges in brightness only.
     #    Both work on the brightness/color split, so neither creates color fringes.
@@ -191,18 +271,22 @@ def parse_crop_pos(pos: str) -> tuple[float, float]:
     return min(max(x, 0.0), 1.0), min(max(y, 0.0), 1.0)
 
 
-def crop_box(h: int, w: int, ratio: str, pos: str = "center") -> tuple[int, int, int, int]:
-    """(x0, y0, width, height) of a width:height crop like "4:5", placed by pos."""
-    a, b = (float(n) for n in ratio.split(":"))
+def crop_box(h: int, w: int, ratio: str, pos: str = "center",
+             zoom: float = 1.0) -> tuple[int, int, int, int]:
+    """(x0, y0, width, height) of a width:height crop like "4:5", placed by pos.
+
+    zoom < 1 keeps a smaller box (0.8 = 80% of the largest crop's width and height),
+    so pos can move the subject onto a thirds line instead of only trimming one edge.
+    """
+    a, b = (float(n) for n in ratio.split(":")) if ratio else (w, h)
     target = a / b
     ax, ay = parse_crop_pos(pos)
-    if w / h > target:
-        new_w = int(round(h * target))
-        return int(round((w - new_w) * ax)), 0, new_w, h
-    new_h = int(round(w / target))
-    return 0, int(round((h - new_h) * ay)), w, new_h
+    cw, ch = (h * target, h) if w / h > target else (w, w / target)
+    zoom = min(max(zoom, 0.3), 1.0)
+    cw, ch = int(round(cw * zoom)), int(round(ch * zoom))
+    return int(round((w - cw) * ax)), int(round((h - ch) * ay)), cw, ch
 
 
-def crop_to_ratio(img: np.ndarray, ratio: str, pos: str = "center") -> np.ndarray:
-    x0, y0, cw, ch = crop_box(*img.shape[:2], ratio, pos)
+def crop_to_ratio(img: np.ndarray, ratio: str, pos: str = "center", zoom: float = 1.0) -> np.ndarray:
+    x0, y0, cw, ch = crop_box(*img.shape[:2], ratio, pos, zoom)
     return img[y0:y0 + ch, x0:x0 + cw]

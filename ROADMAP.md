@@ -15,13 +15,20 @@ Two tracks that grow together: **the tool** and **you**.
 - [ ] Faster full-size edits (target: under 8 s per 48MP photo)
 - [x] Better ProRAW decoding: start from Apple's finished photo inside the DNG (2026-10-30); `--flat-raw` for the old decode
 - [x] Presets like iPhone Photographic Styles: `amber`, `gold`, `rose-gold`, `bright`
+- [x] Color mixer (HSL, 8 colors), midtone grading, skin protection in grading (2026-10-30)
 - [ ] Research to improve looks: tune presets against more reference photos (owner will send), sunny-day tests,
       use Apple's semantic masks in ProRAW (sky/skin/people) for local edits, check open LUT licenses
+- [x] Reference library with sources for every rule: [docs/08](docs/08-references.md) (2026-11-01)
+- [ ] Score edits with NIMA (model trained on ~255k photos rated by ~200 people each) to pick looks and best shots
+- [ ] Compare presets with MIT-Adobe FiveK Expert C (5,000 photos edited by pros)
+- [ ] Skin tone line check: nudge skin hue onto the standard skin line
+- [x] `--crop-zoom`: tighter crops so the subject can sit on a thirds line (2026-11-01)
 - [ ] Auto straighten using the horizon
 - [x] Crop position (`--crop-pos`) and composition grids (`grid` command)
 - [x] Color grading (shadow/highlight tints) + `airy`, `tropical`, `cinematic`, `film` presets
 - [ ] Auto crop: detect the subject and place it on a thirds/golden point
-- [ ] Skin-tone protection for vibrance and temperature
+- [x] Skin-tone protection for vibrance
+- [ ] Skin-tone protection for temperature
 - [ ] Before/after side-by-side for one photo
 
 ### v0.3 — more control

@@ -51,11 +51,11 @@ def edit_pixels(img: np.ndarray, settings: Settings, manual: dict[str, float] | 
 
 def process(path: Path, settings: Settings, manual: dict[str, float], crop: str = "",
             resize: int = 0, crop_pos: str = "center",
-            flat_raw: bool = False) -> tuple[np.ndarray, files.Loaded]:
+            flat_raw: bool = False, crop_zoom: float = 1.0) -> tuple[np.ndarray, files.Loaded]:
     loaded = files.load(path, flat_raw)
     img = loaded.pixels
-    if crop:
-        img = np.ascontiguousarray(adjust.crop_to_ratio(img, crop, crop_pos))
+    if crop or crop_zoom < 1:
+        img = np.ascontiguousarray(adjust.crop_to_ratio(img, crop, crop_pos, crop_zoom))
     # Edit at full size, shrink last: sharpening a shrunken photo makes it look crunchy.
     img = edit_pixels(img, settings, manual, verbose=True)
     return files.resize_long_edge(img, resize), loaded
@@ -88,7 +88,7 @@ def cmd_edit(args: argparse.Namespace, prefs: dict) -> int:
         print(f"[{i}/{len(photos)}] {path.name}  (preset: {name})")
         start = time.perf_counter()
         try:
-            img, loaded = process(path, settings, manual, crop, resize, crop_pos, args.flat_raw)
+            img, loaded = process(path, settings, manual, crop, resize, crop_pos, args.flat_raw, args.crop_zoom)
             saved = files.save(
                 img, out_dir / f"{path.stem}_{name}", fmt, args.quality or prefs["quality"],
                 loaded.exif, loaded.icc,
@@ -141,8 +141,8 @@ def cmd_grid(args: argparse.Namespace, prefs: dict) -> int:
     pil = Image.fromarray((np.clip(img, 0, 1) * 255).astype(np.uint8), "RGB")
     h, w = img.shape[:2]
     x0, y0, cw, ch = (0, 0, w, h)
-    if args.crop:
-        x0, y0, cw, ch = adjust.crop_box(h, w, args.crop, args.crop_pos)
+    if args.crop or args.crop_zoom < 1:
+        x0, y0, cw, ch = adjust.crop_box(h, w, args.crop, args.crop_pos, args.crop_zoom)
         shade = Image.new("L", (w, h), 140)
         ImageDraw.Draw(shade).rectangle((x0, y0, x0 + cw - 1, y0 + ch - 1), fill=0)
         pil.paste((0, 0, 0), mask=shade)
@@ -213,6 +213,8 @@ def build_parser() -> argparse.ArgumentParser:
     e.add_argument("-q", "--quality", type=int, help="1-100 for jpg/heic.")
     e.add_argument("--crop", help='Aspect ratio, e.g. "4:5", "1:1", "16:9".')
     e.add_argument("--crop-pos", help='Which part the crop keeps: center, top, bottom, left, right, or "x,y" (0-1).')
+    e.add_argument("--crop-zoom", type=float, default=1.0,
+                   help="Crop tighter: 0.8 keeps 80%% of the width and height. Use with --crop-pos to place the subject.")
     e.add_argument("--resize", type=int, help="Long edge in pixels. 0 = full size.")
     e.add_argument("--preview", action="store_true", help="Quick 2048px version to check the look.")
     e.add_argument("--no-auto", action="store_true", help="Skip auto fixes; use only preset + your sliders.")
@@ -232,6 +234,7 @@ def build_parser() -> argparse.ArgumentParser:
     g.add_argument("photo")
     g.add_argument("--crop", help='Show this crop, e.g. "4:5".')
     g.add_argument("--crop-pos", default="center")
+    g.add_argument("--crop-zoom", type=float, default=1.0)
     g.add_argument("--guides", default="thirds,golden,diagonals", help="Comma list: thirds, golden, diagonals.")
     g.add_argument("-o", "--out")
     g.set_defaults(func=cmd_grid)

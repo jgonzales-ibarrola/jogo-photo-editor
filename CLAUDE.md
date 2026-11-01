@@ -20,8 +20,9 @@ The owner is learning photography with an iPhone Pro Max in the Philippines. Exp
 1. If they don't say which look, pick it from docs/my-style.md. Only if the photo doesn't fit any saved
    preference (e.g. night, indoor, food), run `try` on one photo and recommend a preset in one sentence.
 2. Run `edit` with that preset. Add sliders only for a clear problem (see docs/03-edits-explained.md, "Common problems").
-2b. Decide on crop with the checklist in docs/06-composition-and-crop.md. Default for full-body travel
-   shots: `--crop-pos bottom`. Then Read the final edited photos (not grids) to check nothing important
+2b. Decide on crop per photo (never one crop for a whole batch) with the checklist in
+   docs/06-composition-and-crop.md. Use `--crop-zoom` + `--crop-pos "x,y"` to put the subject on a thirds line.
+   Default for full-body travel shots: `--crop-pos bottom`. Then Read the final edited photos (not grids) to check nothing important
    was cut; if it was, redo that one photo. Say in one line why you cropped or didn't.
 2c. Shooting tips ("how should I take this") only when the user asks, in words, not images.
 2d. Put final post-ready photos in `photos/out/<batch>/post`. Suggest which to post, the carousel order
@@ -45,4 +46,9 @@ The owner is learning photography with an iPhone Pro Max in the Philippines. Exp
 - New slider: add the field to `Settings`, the name to `SLIDERS`, the step in `adjust.apply`, and a row in docs/02 and docs/03.
 - Keep 48MP memory in mind (one float32 copy = ~580 MB). Work in place; do large blurs on downscaled copies.
 - Run `.venv/Scripts/python -m pytest -q` after changes.
+- Every editing or composition rule needs a source in docs/08-references.md. Research first, add the
+  source there, then change code/presets. Follow the block flow and rule priority in
+  docs/09-decision-flow.md: research default > scene rule > photo measurement > owner preference.
+  Owner preferences (docs/my-style.md) are recorded but OFF by default; apply them only when asked.
+  Exception: problems the owner reports (wrong colors on iPhone, blur, bad crops) are bugs; fix them.
 - Keep docs short and plain. No hype. Update ROADMAP.md checkboxes when a feature ships.

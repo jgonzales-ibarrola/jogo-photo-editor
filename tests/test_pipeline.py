@@ -1,3 +1,5 @@
+from dataclasses import replace
+
 import numpy as np
 import pytest
 from PIL import Image
@@ -53,6 +55,30 @@ def test_baseline_exposure_missing_is_zero(heic_with_gps):
     assert files.baseline_exposure(heic_with_gps) == 0.0
 
 
+def test_hsv_round_trip_is_lossless():
+    img = _gradient()
+    out = np.empty_like(img)
+    adjust._from_hsv(*adjust._to_hsv(img), out)
+    assert np.abs(out - img).max() < 1e-4
+
+
+def test_color_mixer_changes_only_its_color():
+    img = np.zeros((10, 20, 3), np.float32)
+    img[:, :10] = (0.2, 0.7, 0.2)  # green
+    img[:, 10:] = (0.7, 0.2, 0.2)  # red
+    out = adjust.apply(img.copy(), Settings(green_sat=-1.0))
+    assert np.ptp(out[:, :10], axis=-1).max() < 0.02          # green turned gray
+    assert np.abs(out[:, 10:] - img[:, 10:]).max() < 1e-4     # red untouched
+
+
+def test_grading_skips_skin():
+    skin = np.full((10, 10, 3), (0.8, 0.6, 0.48), np.float32)
+    teal = Settings(grade_midtones=1.0, grade_midtones_hue=180)
+    protected = np.abs(adjust.apply(skin.copy(), teal) - skin).max()
+    unprotected = np.abs(adjust.apply(skin.copy(), replace(teal, protect_skin=0.0)) - skin).max()
+    assert protected < unprotected * 0.5
+
+
 def test_bw_has_no_color():
     out = cli.edit_pixels(_gradient(), load_presets()["bw"].settings)
     assert np.abs(out[..., 0] - out[..., 1]).max() < 1e-4
@@ -100,6 +126,12 @@ def test_crop_position():
     assert adjust.crop_box(800, 600, "1:1", "0.5,1") == (0, 200, 600, 600)
 
 
+def test_crop_zoom_keeps_smaller_box_placed_by_pos():
+    assert adjust.crop_box(1000, 800, "4:5", "center", 0.8) == (80, 100, 640, 800)
+    assert adjust.crop_box(1000, 800, "4:5", "0,1", 0.5) == (0, 500, 400, 500)
+    assert adjust.crop_box(1000, 800, "", "center", 0.5) == (200, 250, 400, 500)  # zoom only, same shape
+
+
 def test_color_grading_tints_without_changing_brightness():
     gray = np.full((50, 50, 3), 0.3, dtype=np.float32)
     graded = adjust.apply(gray.copy(), Settings(grade_shadows=1.0, grade_shadows_hue=200))
@@ -110,3 +142,27 @@ def test_color_grading_tints_without_changing_brightness():
 def test_grid_command(heic_with_gps, tmp_path):
     assert cli.main(["grid", str(heic_with_gps), "--crop", "4:5", "--crop-pos", "top", "-o", str(tmp_path)]) == 0
     assert (tmp_path / "IMG_0001_grid_4x5_top.jpg").is_file()
+
+
+def test_srgb_conversion_keeps_srgb_and_survives_odd_profiles():
+    from PIL import ImageCms
+    from jogo.files import _to_srgb
+    # Pillow can't build a Display P3 profile, so real P3 conversion is checked on iPhone photos by hand.
+    srgb = Image.new("RGB", (4, 4), (40, 200, 60))
+    out, icc = _to_srgb(srgb, files.SRGB_ICC)
+    assert out is srgb and icc == files.SRGB_ICC
+    lab = ImageCms.ImageCmsProfile(ImageCms.createProfile("LAB")).tobytes()
+    out, icc = _to_srgb(srgb, lab)  # unusual profiles must never crash loading
+    assert out.size == (4, 4)
+
+
+def test_vibrance_skips_skin():
+    skin = np.full((8, 8, 3), (0.80, 0.58, 0.45), dtype=np.float32)
+    leaf = np.full((8, 8, 3), (0.45, 0.60, 0.40), dtype=np.float32)
+    s = Settings(auto=False, vibrance=0.5)
+    def spread(a):
+        return float(a.max(axis=-1).mean() - a.min(axis=-1).mean())
+    skin_gain = spread(adjust.apply(skin.copy(), s)) / spread(skin)
+    leaf_gain = spread(adjust.apply(leaf.copy(), s)) / spread(leaf)
+    assert skin_gain < leaf_gain
+    assert skin_gain < 1.15

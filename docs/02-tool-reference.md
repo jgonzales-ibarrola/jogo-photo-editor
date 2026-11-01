@@ -31,6 +31,7 @@ Output name: `<original name>_<preset>.<format>`, e.g. `IMG_0412_vivid.jpg`.
 | `-q, --quality 1-100` | JPG/HEIC quality. 92 is visually identical to 100 at half the file size. |
 | `--crop RATIO` | Center crop. `4:5` Instagram portrait, `1:1` square, `16:9` wide/YouTube, `9:16` Stories/Reels, `3:2` classic photo. |
 | `--crop-pos POS` | Which part the crop keeps: `center`, `top`, `bottom`, `left`, `right`, or `"x,y"` (0–1). See [06](06-composition-and-crop.md). |
+| `--crop-zoom N` | Crop tighter. `0.8` keeps 80% of the width and height. With `--crop-pos "x,y"` it moves the subject onto a thirds line. Default `1`. |
 | `--resize PIXELS` | Longest side in pixels. `2048` for Facebook/Instagram. `0` keeps full size. |
 | `--preview` | Fast 2048px version. Use to check a look before the slow full-size edit. |
 | `--no-auto` | Skip auto-fix. Only the preset and your sliders are applied. |
@@ -94,7 +95,15 @@ Start small: 0.1 to 0.3 is a visible change. Same sign convention as Lightroom.
 | `--noise-reduction` | Cleans grain/color speckles (night shots). Only 0 to 1. | — |
 | `--vignette` | Darker corners, draws the eye to the center. | Lighter corners. |
 | `--grade-shadows` | Tints dark areas with `--grade-shadows-hue`. Only 0 to 1. | — |
+| `--grade-midtones` | Tints the middle tones with `--grade-midtones-hue`. Only 0 to 1. Keep small: skin lives here. | — |
 | `--grade-highlights` | Tints bright areas with `--grade-highlights-hue`. Only 0 to 1. | — |
+| `--<color>-hue` | Moves that color toward the next one on the wheel (green → aqua). | Toward the previous one (green → yellow). |
+| `--<color>-sat` | That color only gets stronger. | That color only gets duller (−1 = gray). |
+| `--<color>-lum` | That color only gets lighter. | That color only gets darker. |
+
+`<color>` is one of `red`, `orange`, `yellow`, `green`, `aqua`, `blue`, `purple`, `magenta` (the Color Mixer / HSL panel).
+Example: `--green-sat -0.3 --blue-lum -0.2`. Grays and whites are never changed by these.
+Presets can also set `protect_skin` (0..1, default 0.7): how much vibrance and color grading skip skin tones.
 
 The two hue options take a color-wheel angle (0–360) and replace the preset's hue instead of adding to it.
 Color grading explained: [03](03-edits-explained.md).
@@ -140,6 +149,7 @@ Command-line options always win over this file.
 | `amber` | Like the iPhone Amber style: warm amber, deep rich contrast. Streets, buildings. |
 | `gold` | Like the iPhone Gold style: warm golden glow, a bit brighter. Travel, landmarks, people. |
 | `rose-gold` | Like the iPhone Rose Gold style: warm with a soft pink-red. Portraits, skin. |
+| `editorial` | Clean professional travel look: olive greens, teal-blue sky, warm highlights, natural skin. |
 | `bright` | Like the iPhone Bright style: lighter, more vivid, clean blacks. Everyday. |
 
 ### Your own presets
@@ -164,7 +174,11 @@ and `auto_strength = 0.5` (apply only half of the auto fix).
 
 | Type | From iPhone setting | Notes |
 |---|---|---|
-| `.HEIC` | HEIF / HEIF Max | Normal iPhone photo. Colors (Display P3) are kept exactly. |
+| `.HEIC` | HEIF / HEIF Max | Normal iPhone photo. |
 | `.DNG` | Apple ProRAW | Most editing room. Huge files (~50–100 MB at 48MP). |
 | `.JPG` | Most Compatible | Works, least editing room. |
 | `.PNG`, `.TIF` | — | Work too. |
+
+Results are saved in sRGB, the standard web color space. iPhone photos are Display P3, which
+Windows often ignores and the iPhone shows more saturated, so a P3 file looks different on each.
+sRGB looks the same on Windows, iPhone, Instagram and Facebook.

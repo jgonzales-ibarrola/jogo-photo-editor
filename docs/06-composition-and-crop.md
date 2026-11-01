@@ -61,6 +61,16 @@ I follow this for every crop, in this order:
 | `left` / `right` | that side | the other side | Subject is on one side. |
 | `"x,y"` e.g. `"0.3,0.8"` | exact spot (0 = left/top, 1 = right/bottom) | — | Fine control. |
 
+## `--crop-zoom`: crop tighter to fix composition
+
+iPhone photos are 3:4. A 4:5 crop only trims about 6%, so the subject can't really move.
+`--crop-zoom 0.85` keeps 85% of the width and height. Now `--crop-pos` has room to slide the box.
+
+- Person in the dead center with lots of empty space around: zoom 0.8–0.9, and slide so the eyes sit on the top third line.
+- Big empty ground or sky: zoom 0.9, and slide away from the empty side.
+- Keep zoom at 0.75 or more. The photo still needs to be about 2000 px on the long side.
+- Don't zoom when the place matters as much as the person (sign, landmark, mountain). Keep the whole scene.
+
 ## Example: Cagsawa photo IMG_0080 (2026-10-30)
 
 - The grid showed the face right on the top-left thirds crossing. The photo was already well composed.

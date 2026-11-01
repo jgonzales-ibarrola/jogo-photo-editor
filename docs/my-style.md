@@ -1,6 +1,9 @@
 # My editing style
 
 Decisions from real edits. Claude reads this before every edit and adds to it after feedback.
+Since 2026-11-01: edits follow research first ([09](09-decision-flow.md)). Personal taste below
+("bright but not too bright", "neon blooms softly") is kept but only applied when the owner asks.
+Reported problems (iPhone colors, blur, bad crops) are still fixed for everyone.
 Newest at the bottom of each section. Edit freely.
 
 ## What I like
@@ -18,6 +21,8 @@ Newest at the bottom of each section. Edit freely.
 - Heavy clarity/sharpening on social-size photos.
 - ProRAW edits that look dim, flat or "unedited".
 - Neon signs that glow into a blur so you can't read them. The sign is the subject: keep the room dark, keep the letters sharp.
+- Over-vivid color (2026-10-31): neon-green grass and trees, yellow/orange skin, everything "too vibrant" on the iPhone.
+  Realistic color beats rich color. Bright yes, saturated no. Skin must look like real skin.
 
 ## Photo types (grows as we edit)
 
@@ -47,11 +52,17 @@ photos are often indoors (golden-hour on indoor shots was wrong, 2026-10-30).
 
 - Only make photos meant for posting. No comparison sheets or grid images unless I ask.
 - Shooting/composition advice only when I ask, in plain words.
+- Crop every photo for composition, one by one (2026-11-01). Not one crop for the whole batch.
+  Use the thirds/golden lines and `--crop-zoom` to move the subject. Keep all photos, then suggest the best to post.
 
 ## Decision log
 
 | Date | Photos | What happened | Decision |
 |---|---|---|---|
+| 2026-11-01 | cagsawa-family: 46 photos (ATV at Cagsawa sign, family meals, event, portraits) | Owner: crop each photo for composition, not one crop per batch. Tool only trimmed one edge (3:4 → 4:5 = ~6%) | Added `--crop-zoom`. Crop picked per photo: mud splash 0.85 bottom-right, single rider 0.92 bottom, pairs full width, 0412 0.85 so faces sit on the top third. ATV `gold`; people/portraits `natural` (skin); food `food`. Awaiting feedback. |
+| 2026-11-01 | naga-test: 20 photos (10 ProRAW, 10 HEIC), fresh re-edit to test the sRGB + toned-down looks | Outdoor people `gold` 4:5 bottom; wide selfie 0671 `gold` 1:1; church outside/inside `amber` center; mall `bright` bottom; restaurant 0711 `natural` bottom; food `food` center. Auto mostly fixed warm cast halfway and deepened gray blacks; neon kept dark | Awaiting iPhone feedback: are greens, skin and color realistic now? |
+| 2026-10-31 | naga + Cagsawa edits, viewed on iPhone | Owner and girlfriend: greens unrealistic, skin too yellow, everything too vibrant on iPhone. Cause 1: edits were saved as Display P3; Windows ignores it (looked fine on PC), iPhone shows it more saturated. Cause 2: looks had strong vibrance + yellow glow | Tool fixed: everything is now edited and saved in sRGB (same look everywhere); vibrance skips skin. `tropical`, `gold`, `amber`, `bright`, `rose-gold`, `editorial` toned down (vibrance ~0.05–0.1, muted greens/yellows, weaker golden glow). Awaiting feedback. |
+| 2026-10-30 | naga raw re-edit (36 DNG) | Owner asked for more beautiful, professional grading. Research: HSL is the pro tool; olive greens, deeper sky, clean skin, warm highlights + cool shadows, grade last, protect skin | Added color mixer, midtone grade, skin protection. `gold`/`amber` refined; new `editorial`. Awaiting feedback. |
 | 2026-10-30 | naga re-edit feedback | Owner: much better than the iPhone photos, sharp and not pixelated | Keep: ProRAW = Apple base + `gold` (outdoor/people), `amber` (church/buildings). More research later. |
 | 2026-10-30 | naga re-edit, all 56 | New ProRAW base + looks: outdoor/people `gold`, church inside/details `amber`, mall `bright`, car selfies `rose-gold`, food `food`. Brighter and clearer; dark stained glass (0688) and statue (0586) now usable | Awaiting feedback. |
 | 2026-10-30 | naga ProRAW (DNG) photos | Owner: raw photos look dim and unedited; shared iPhone Photographic Style examples (Amber, Gold, Rose Gold, Bright) as the target | Tool fixed: ProRAW now starts from Apple's finished photo stored in the DNG (brighter, clearer). Added `amber`/`gold`/`rose-gold`/`bright` presets. Awaiting pick. |
