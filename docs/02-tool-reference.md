@@ -28,7 +28,7 @@ Output name: `<original name>_<preset>.<format>`, e.g. `IMG_0412_vivid.jpg`.
 | `-p, --preset NAME` | Which look to use. Default: `natural`. |
 | `-o, --out FOLDER` | Where to save. Default: `photos\out`. |
 | `-f, --format jpg\|heic\|tif` | `jpg`: works everywhere. `heic`: about half the size, same quality. `tif`: 16-bit, for editing further in another app. |
-| `-q, --quality 1-100` | JPG/HEIC quality. 92 is visually identical to 100 at half the file size. |
+| `-q, --quality 1-100` | JPG/HEIC quality. Default 95: best quality, full color detail. |
 | `--crop RATIO` | Center crop. `4:5` Instagram portrait, `1:1` square, `16:9` wide/YouTube, `9:16` Stories/Reels, `3:2` classic photo. |
 | `--crop-pos POS` | Which part the crop keeps: `center`, `top`, `bottom`, `left`, `right`, or `"x,y"` (0–1). See [06](06-composition-and-crop.md). |
 | `auto_skin` (preset/toml) | `true` by default. After the look, faces are found and their skin hue is moved half way to the skin tone line (max 6°). |
@@ -131,7 +131,7 @@ Command-line options always win over this file.
 |---|---|---|
 | `preset` | `"natural"` | Preset used when you don't pass `--preset`. |
 | `format` | `"jpg"` | Output format. |
-| `quality` | `92` | JPG/HEIC quality. |
+| `quality` | `95` | JPG/HEIC quality. |
 | `output_dir` | `"photos/out"` | Where edited photos go. |
 | `input_dir` | `"photos/in"` | Where `edit` looks when you don't name files. |
 | `resize` | `0` | Long edge in pixels, `0` = full size. |

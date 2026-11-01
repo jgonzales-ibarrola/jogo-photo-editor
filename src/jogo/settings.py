@@ -115,7 +115,7 @@ def load_presets(user_dir: Path | None = None) -> dict[str, Preset]:
 DEFAULT_PREFS = {
     "preset": "natural",
     "format": "jpg",
-    "quality": 92,
+    "quality": 95,  # best-quality JPEG (4:4:4 color); owner keeps only the best photos, size doesn't matter
     "output_dir": "photos/out",
     "input_dir": "photos/in",
     "resize": 0,

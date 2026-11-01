@@ -15,3 +15,6 @@ __pycache__/
 .pytest_cache/
 build/
 dist/
+
+# Research downloads (FiveK etc.)
+research/data/

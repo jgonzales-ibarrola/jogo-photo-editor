@@ -47,6 +47,8 @@ photos are often indoors (golden-hour on indoor shots was wrong, 2026-10-30).
 - Always make two folders: `post` (2048, for social media) and `full` (`--resize 0`, to keep/zoom/print).
   Owner confirmed 2026-10-30: full version looks smooth, not pixelated, on Windows.
 - Always edit full size first, shrink last (built into the tool since 2026-10-30).
+- Best quality always, file size doesn't matter (2026-11-01): JPEG quality 95, full color detail.
+  Owner keeps only the best photos and deletes repeats.
 
 ## How I want Claude to work
 

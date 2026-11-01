@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+**Start of every session: read [NEXT.md](NEXT.md).** It has the work in progress and the next steps.
+
 This repo is a local photo editor for iPhone HEIC / ProRAW (DNG) / JPG files, plus beginner photography guides.
 The owner is learning photography with an iPhone Pro Max in the Philippines. Explain things in short, plain sentences.
 
