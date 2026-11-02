@@ -196,6 +196,10 @@ lights would clip (neon tubes still get +0.2) instead of +0.2 for any colored ar
 39 of 300 FiveK photos, mostly colorful clothes and flowers, and on iPhone 0431 in daylight.
 Result (`check --fast`): `natural` 3.35 -> 2.15, `night` 4.16 -> ~3.4. Indoor people still ~7.5:
 their gap is now color (warmth b 13 vs 9, chroma 19.5 vs 16.5), not brightness.
+Lamp-lit rooms in the day: some had no gray area, so auto skipped white balance, and brightening
+made them even more orange (b 25 -> 44; pros took it to 9). The whole-photo average ("gray world")
+is now used for any photo with no gray when it is strongly orange (warmth > 0.3), not only at
+night. Indoor people 7.50 -> 6.67; none of the 46 iPhone test photos changed.
 
 Caveat: FiveK inputs are flat Nikon/Canon raws, darker than a finished iPhone photo. The *targets*
 (experts' L*, chroma, warmth) transfer; the size of the gap on iPhone photos will be smaller.

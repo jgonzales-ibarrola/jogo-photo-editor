@@ -27,6 +27,7 @@ WB_KEEP = 1 / 3        # FiveK: pros keep ~1/3 of a blue/orange cast, the same i
 # moves twice as much as red. Equal and opposite red/blue moves also shift green-magenta (Lab a*).
 WARM_DIR = np.array([1.0, -0.083, -2.12])
 B_STAR = np.array([0.243, 0.757, -1.0])  # How much each log gain moves Lab b* (warmth) on a gray.
+WARM_ROOM = 0.3        # Whole-photo warmth above which a photo with no gray counts as lamp-lit.
 
 
 @dataclass
@@ -52,6 +53,11 @@ def _chroma(small: np.ndarray) -> float:
     xyz /= np.array([0.9505, 1.0, 1.089])
     f = np.where(xyz > 0.008856, np.cbrt(xyz), 7.787 * xyz + 16 / 116)
     return float(np.hypot(500 * (f[..., 0] - f[..., 1]), 200 * (f[..., 1] - f[..., 2])).mean())
+
+
+def _warmth(cast: np.ndarray) -> float:
+    """How far a gray's color is along WARM_DIR: > 0 orange, < 0 blue."""
+    return float(B_STAR @ np.log(np.maximum(cast / cast[1], 1e-3)) / (B_STAR @ WARM_DIR))
 
 
 def analyze(img: np.ndarray, auto_wb: bool = True, strength: float = 1.0) -> Analysis:
@@ -84,12 +90,15 @@ def analyze(img: np.ndarray, auto_wb: bool = True, strength: float = 1.0) -> Ana
     colored_lights = float(colored.mean() * 100)
 
     # A room or street lit only by orange lamps has no gray left to measure. Then use the whole
-    # photo's average ("gray world", docs/08). Not for neon scenes: their color is the subject.
+    # photo's average ("gray world", docs/08): at night, or when the whole photo is strongly orange
+    # (a lamp-lit room in the day). Not for neon scenes: their color is the subject.
     lit = (lum > 0.03) & (lum < 0.95)
     orange = (r >= top) & (b <= g)
     neon = float(((top > 0.6) & (spread > 0.6) & ~orange).mean() * 100)
-    if not has_neutrals and median < DARK_SCENE and neon <= 1 and lit.mean() > 0.1:
-        cast, has_neutrals = linear[lit].mean(axis=0), True
+    if not has_neutrals and neon <= 1 and lit.mean() > 0.1:
+        world = linear[lit].mean(axis=0)
+        if median < DARK_SCENE or _warmth(world) > WARM_ROOM:
+            cast, has_neutrals = world, True
 
     a = Analysis(median, dark_pct, bright_pct, cast)
     k = float(np.clip(strength, 0, 1))
@@ -155,8 +164,7 @@ def analyze(img: np.ndarray, auto_wb: bool = True, strength: float = 1.0) -> Ana
         # Split the cast like Lightroom's two sliders: temperature (blue-orange) and tint
         # (green-magenta). FiveK: pros remove 2/3 of the temperature cast in any light and leave
         # the tint (fixing it too turned our highlights green).
-        log_cast = np.log(np.maximum(cast / cast[1], 1e-3))  # red and blue vs green; 0 = gray
-        temp = float(B_STAR @ log_cast / (B_STAR @ WARM_DIR))  # how far along WARM_DIR the cast is
+        temp = _warmth(cast)
         gains = np.clip(np.exp(-temp * (1 - WB_KEEP) * k * WARM_DIR), 0.5, 1.5)
         if np.abs(gains - 1.0).max() > 0.015:
             a.wb_gains = gains.astype(np.float32)
