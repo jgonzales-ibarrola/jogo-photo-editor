@@ -152,7 +152,7 @@ Command-line options always win over this file.
 | `overcast` | Cloudy and rainy-season days. Adds warmth and contrast. |
 | `portrait` | People. Softer skin, gentle warmth, slight vignette. |
 | `food` | Food. Warmer, richer, a bit of texture. |
-| `night` | City lights. Stays dark, cleans noise, protects lights. |
+| `night` | Night scenes. Brightens like pro editors (FiveK), protects lights, cleans noise. |
 | `bw` | Black and white with punch. Street and portraits. |
 | `airy` | Bright, clean, cheerful. Soft contrast, warm glow. |
 | `tropical` | Sunny Philippines: turquoise shadows, golden highlights. |

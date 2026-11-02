@@ -156,7 +156,12 @@ photos (`fivek.py check --looks natural`, 2026-11-02): `natural` went from dista
 from the experts (lower = closer). Closer in every scene; night outdoors improved most (9.66 → 4.99).
 Brightest parts now 74 L* (experts 79), so the highlight guard doesn't hold us back.
 Still off:
-- Still darker than the pros: middle 30.7 vs 39.7 L*. Next lever: the presets' tone curves, not exposure.
+- Still darker than the pros: middle 30.7 vs 39.7 L*. Why (2026-11-02): pros don't aim every photo
+  at one brightness. They keep dark photos darker and bright ones brighter. Day photos that weren't
+  very dark (input L* 20+) end at L* ~50 on average, so the auto target went from 0.42 (L* ~44) to
+  0.47 (L* 50). The rest of the gap is very dark raws (input L* < 20); an iPhone photo never starts
+  that dark, so we don't chase it. Night preset now uses the full auto fix (was 40%): night photos
+  distance 9.95 -> 5.86.
 - Indoor people (b 12.3 vs 8.6) and night indoors (10.2 vs 6.6) are still too warm.
 - Highlights turned slightly green (a* −1.9 vs experts +0.5), likely from the stronger white balance.
 - Daylight: pros warm photos a little more than we do (outdoor people b 4.8 vs 9.1).

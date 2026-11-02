@@ -120,6 +120,15 @@ The look is chosen by **light + subject**, not by time of day.
                  │ capped, block 3)  │          │ capped, block 3)  │ capped, block 3)
 ```
 
+**What FiveK says (2026-11-02, docs/08).** Closest looks to the pros' average, per scene:
+outdoor people `airy`/`golden-hour`; outdoor buildings and nature `airy`/`landscape`; indoor people
+`bright`; night `tropical`/`editorial`. These were measured before today's auto changes, on Nikon/Canon
+raws, and they mostly reward brighter, more colorful looks. More color conflicts with the owner's
+"too vivid on iPhone" bug (my-style.md, 2026-10-31), so the table above is kept for now.
+Changed: `night` now uses the full auto fix (it held auto at 40%, so night photos stayed much darker
+than the pros': distance 9.95 -> 5.86). Candidates to try next: `bright` for indoor people,
+`airy` for outdoor people (check skin warmth on iPhone first).
+
 ## Research targets used by the blocks
 
 | Block | Target | Source | Status |

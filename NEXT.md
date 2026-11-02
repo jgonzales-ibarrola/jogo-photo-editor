@@ -42,8 +42,11 @@ Start-Process .venv\Scripts\python.exe -ArgumentList 'research/fivek.py','measur
 3. [x] Findings written in docs/08 ("What we measured"). Short version: pros are brighter
        (+8–11 L*), more contrast, more color on nature, and remove orange lamp color at night/indoors.
        Auto exposure caps at ~+1 EV (`auto.py` line ~60): likely the main brightness gap.
-4. [ ] Update the scene -> look table in docs/09 from the data, and tune presets toward the expert
-       average. Re-run `report` to confirm they got closer. Run pytest.
+4. [x] 2026-11-02: auto target 0.42 -> 0.47 (pros put normal day photos at L* 50); `night` uses full
+       auto (night distance 9.95 -> 5.86). FiveK's per-scene best looks are written under the scene
+       table in docs/09, but the table is kept: the pros' looks are more colorful, which conflicts
+       with the owner's "too vivid" bug. Try `bright` (indoor people) and `airy` (outdoor people) on
+       real photos when the owner gives iPhone feedback.
 4b. [x] First FiveK rules are in `auto.py` (2026-11-02, tests pass): exposure 90% of the way up to
        +2.5 EV, highlight guard (stop at L* 90), vibrance for dull photos, stronger lamp-color removal
        at night. Checked on all photos in `photos/in`: only small changes, except 0443 (white shirt,

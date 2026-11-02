@@ -8,7 +8,7 @@ import numpy as np
 
 from .adjust import GAMMA, luminance
 
-TARGET_MIDTONE = 0.42  # Where a "normally bright" photo's middle brightness sits.
+TARGET_MIDTONE = 0.47  # FiveK: pros put normal daylight photos at L* ~50 (sRGB 0.47), docs/08.
 
 # Rules below marked "FiveK" come from 300 photos x 5 expert edits (docs/08, "What we measured").
 EV_SHARE = 0.9         # FiveK: experts bring dark photos ~90% of the way to the target, not 70%.

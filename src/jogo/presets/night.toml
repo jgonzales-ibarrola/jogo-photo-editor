@@ -1,5 +1,4 @@
-description = "City lights and night scenes. Keeps it dark, cleans noise, protects lights."
-auto_strength = 0.4
+description = "Night scenes. Brightens like pro editors do (FiveK), protects lights, cleans noise."
 highlights = -0.4
 shadows = 0.1
 contrast = 0.15
