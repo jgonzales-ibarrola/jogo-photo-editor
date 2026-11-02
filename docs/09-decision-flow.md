@@ -57,8 +57,8 @@ Legend: `[x]` built   `[~]` partly built / done by Claude by eye   `[ ]` planned
                     │  gray areas blue/orange? ──────yes─┼─> white balance 2/3 way, any light
                     │        │                           │     (FiveK); green/magenta tint left
                     │        │                           │     alone; sky + leaves don't count
-                    │  no gray + (dark or very       │
-                    │  orange)? ─────────────────yes─┼─> gray world (whole-photo average)
+                    │  no gray + (dark or very           │
+                    │  orange)? ─────────────────────yes─┼─> gray world (whole-photo average)
                     │  nothing wrong ────────────────────┼─> change nothing
                     └─────────────────┬──────────────────┘
                                       │
