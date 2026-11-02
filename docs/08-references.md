@@ -203,6 +203,11 @@ night. Indoor people 7.50 -> 6.67; none of the 46 iPhone test photos changed.
 Indoor people look: `bright` 5.00 vs `natural` 7.87 (26 photos, full check). Scene table changed.
 `night` preset: added yellow -0.25 and orange -0.12 saturation (like `bright`): night indoors
 8.63 -> 6.05, night outdoors 5.12 -> 2.73. Lamp orange was the gap (b 10.6 vs pros 6.6).
+Outdoor people: `airy` 3.96, `gold` 7.44 (26 photos). `gold` was darker, less colorful (14.4 vs
+19.5) and cooler (b 4.3 vs 9.1) than the pros, mostly from muting yellow and orange. Kept `gold`
+(owner's main look, no iPhone feedback yet) but moved it toward the pros: brighter, less contrast,
+yellow/orange muted less, a bit warmer; greens stay muted (-0.4). `gold` 7.44 -> 5.68. Skin hue
+21.1 (pros 22.3), so skin is not more yellow than the pros'.
 
 Caveat: FiveK inputs are flat Nikon/Canon raws, darker than a finished iPhone photo. The *targets*
 (experts' L*, chroma, warmth) transfer; the size of the gap on iPhone photos will be smaller.

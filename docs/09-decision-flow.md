@@ -135,7 +135,8 @@ Changed 2026-11-02: indoor people `natural` -> `bright`. On all 26 FiveK indoor-
 (`check --scene "indoors / person(s)"`) `bright` is at 5.00 vs `natural` 7.87: its lower orange and
 yellow saturation remove the extra warmth that auto can't see (beige walls read as gray).
 Checked on iPhone 0039 (restaurant): lighter, skin less orange, not vivid.
-Still to try: `airy` for outdoor people (check skin warmth on iPhone first).
+Outdoor people: kept `gold` but tuned it toward the pros (7.44 -> 5.68; `airy` is 3.96 but has
+brighter greens). Owner can still pick `airy` after seeing both on the iPhone.
 
 ## Research targets used by the blocks
 
