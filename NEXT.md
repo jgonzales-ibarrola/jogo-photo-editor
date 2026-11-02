@@ -9,67 +9,36 @@ Goal (owner): edits based on research and what most people/pros prefer, not only
 Rule priority and the 9-block edit flow: [docs/09-decision-flow.md](docs/09-decision-flow.md).
 Sources and findings: [docs/08-references.md](docs/08-references.md).
 
-Done on branch `research-decision-flow` (not merged to `main` yet):
-- docs/08 references, docs/09 decision flow, rule priority (research first, owner taste off by default)
-- `--crop-zoom`, per-photo composition crops
-- `jogo score` (NIMA + MUSIQ + LAION). Finding: good for picking photos, can't judge grading
-- Skin tone line check on detected faces (OpenCV 4.x, not 5)
-- JPEG quality 95 (owner: best quality, size doesn't matter)
+Merged to `main` 2026-11-02 (branch `research-decision-flow`): references and decision flow,
+`--crop-zoom`, `jogo score`, skin tone line check, JPEG 95, and the FiveK study with the rules
+it gave `auto.py` (brighter target, highlight guard, vibrance for dull photos, white balance
+2/3 of the way in any light, warmth-only). `natural` distance to the pros: 6.25 -> 3.35.
 
-## In progress: FiveK study (roadmap item "Compare presets with FiveK")
+## Next: adaptive color grade (roadmap item, docs/09 block 4)
 
-What: 300 FiveK photos, each with raw input + edits by 5 pro photographers, balanced by scene.
-Why: learn what pros do per scene (brightness, contrast, color, tint, shadow/highlight grade, skin)
-and how close our looks are. It's for knowledge and rules, not for training an AI model.
-Script: [research/fivek.py](research/fivek.py). Data: `research/data/fivek/` (git-ignored, research
-license: never commit or republish the photos).
+Weakest FiveK scenes: indoor people and night indoors (distance ~10-13). Fit simple rules from
+input stats -> expert output stats per scene ("pros add less color when the photo is already
+colorful"), put them in `auto.py` with notes, cite docs/08, add tests.
 
-Download finished 2026-11-01 (300/300). `measure` started 2026-11-01 ~14:25 as its own Windows
-process, ~35 s per photo, ~3 hours. It saves after each photo and resumes when rerun.
+Check a change in ~3 min: `.venv/Scripts/python research/fivek.py check --fast --looks natural,night`
+(lower `dist` = closer to the pros; compares old and new on the same 100 photos).
 
-```powershell
-Get-Content research/data/fivek/measure.log -Tail 3        # progress: [n/300]
-# Running? (if not, and the log stops before 300, just restart it: it resumes)
-Get-CimInstance Win32_Process -Filter "Name='python.exe'" | Where-Object CommandLine -match 'fivek.py measure'
-Start-Process .venv\Scripts\python.exe -ArgumentList 'research/fivek.py','measure' -WindowStyle Hidden -RedirectStandardOutput research/data/fivek/measure.log -RedirectStandardError research/data/fivek/measure.err
-```
+Also open:
+- Highlights still a little green (a* -1.5 vs pros +0.4). Suspect: the per-channel rolloff in
+  `adjust._tone_lut`.
+- Try `bright` (indoor people) and `airy` (outdoor people) on real photos, after iPhone feedback.
+  FiveK prefers them, but they are more colorful than the owner liked (docs/09, under the table).
 
-### Steps
-
-1. [x] Download 300 photos (fetch checks file size and handles names with spaces).
-2. [x] `measure` finished 2026-11-01 17:25 (300/300). `report` fixed (dusk/unknown time were
-       lumped into "night"). Output saved to `research/data/fivek/report.txt`.
-3. [x] Findings written in docs/08 ("What we measured"). Short version: pros are brighter
-       (+8–11 L*), more contrast, more color on nature, and remove orange lamp color at night/indoors.
-       Auto exposure caps at ~+1 EV (`auto.py` line ~60): likely the main brightness gap.
-4. [x] 2026-11-02: auto target 0.42 -> 0.47 (pros put normal day photos at L* 50); `night` uses full
-       auto (night distance 9.95 -> 5.86). FiveK's per-scene best looks are written under the scene
-       table in docs/09, but the table is kept: the pros' looks are more colorful, which conflicts
-       with the owner's "too vivid" bug. Try `bright` (indoor people) and `airy` (outdoor people) on
-       real photos when the owner gives iPhone feedback.
-4b. [x] First FiveK rules are in `auto.py` (2026-11-02, tests pass): exposure 90% of the way up to
-       +2.5 EV, highlight guard (stop at L* 90), vibrance for dull photos, stronger lamp-color removal
-       at night. Checked on all photos in `photos/in`: only small changes, except 0443 (white shirt,
-       black speaker), which the guard now saves. FiveK check: `natural` distance 6.25 -> 4.18.
-       Remaining gaps (docs/08): still ~9 L* darker, indoor/night too warm, highlights slightly green.
-5a. [x] 2026-11-02: white balance from FiveK: temperature 2/3 of the way to neutral in any light,
-       tint left alone (docs/08 "White balance from FiveK"). `fivek.py check --fast` = 2-3 min check.
-       Warmth fix now moves blue ~2x red so it doesn't turn photos green (natural 3.35, night 4.16).
-       Open: highlights still a little green (a* -1.5 vs +0.4; suspect per-channel rolloff in
-       adjust._tone_lut), indoor people / night indoors still the weakest scenes (distance ~10-13).
-5. [~] Build the adaptive color grade (roadmap item, docs/09 block 4): from the FiveK data, fit simple
-       rules like "pros add less color when the photo is already colorful", "pros brighten dark photos
-       by X". Use input stats -> expert output stats (simple linear fits per stat, per scene).
-       Put them in auto.py as plain rules with notes, cite docs/08. Add tests.
-6. [ ] Update docs/09 status marks, ROADMAP checkboxes, commit, then offer to merge to `main`.
-
-### Things to know
+### Things to know (FiveK)
+- Data: `research/data/fivek/` (git-ignored, research license: never commit or republish the photos).
 - The 5 experts disagree a lot (one goes cool, one warm). Use their average, not one expert.
-- Experts' TIFFs are ProPhoto RGB; the script converts them to sRGB (checked by eye, looks right).
-- FiveK inputs are Nikon/Canon raws (decoded with our rawpy path), not iPhone ProRAW. Numbers about
-  brightness/color targets transfer; the input "baseline" is flatter than an iPhone photo.
+- FiveK inputs are Nikon/Canon raws, darker and flatter than an iPhone photo. Targets transfer;
+  the size of the gap doesn't. Don't chase brightness for very dark raws.
+- Our gray-area detector counts some beige things as gray on the pros' photos: judge white balance
+  ideas by the `check` distance, not by the detector alone.
 
 ## Not started
 - Skin protection for temperature (docs/09 block 5)
 - Auto scene detection and auto crop (docs/09 blocks 2 and 6), now done by Claude by eye
-- Owner hasn't given iPhone feedback on naga-test or cagsawa-family edits yet (my-style.md)
+- Owner hasn't given iPhone feedback on naga-test or cagsawa-family edits yet (my-style.md).
+  Since 2026-11-02 auto edits are a bit brighter and warm photos less orange: re-edit before asking.

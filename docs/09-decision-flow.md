@@ -133,15 +133,15 @@ than the pros': distance 9.95 -> 5.86). Candidates to try next: `bright` for ind
 
 | Block | Target | Source | Status |
 |---|---|---|---|
-| 3 | Bright beats dark (+24% likes) | Curalate, 8M posts | Exposure lifts dark photos |
+| 3 | Bright beats dark (+24% likes); pros put day photos at L* ~50 | Curalate; FiveK | Exposure lifts dark photos, highlight guard |
 | 3 | Don't darken a bright sky/beach | Owner + common practice | Only darken if median > 0.68 |
-| 3 | White balance half way, not fully neutral | Common practice | Built |
+| 3 | White balance: remove 2/3 of a blue/orange cast, leave tint | FiveK (281 photos) | Built 2026-11-02 |
 | 4 | Low/moderate saturation beats vivid (+18% likes) | Curalate | Looks toned down 2026-10-31 |
 | 4 | Moderate color variety gets most likes | Academic study (press) | Not measured yet |
 | 5 | Skin: small HSL moves, keep on skin tone line | Skin guides, vectorscope | Partly built |
 | 6 | Empty background space (+29% likes) | Curalate | Don't over-crop travel shots |
 | 6 | No crops at joints, eyes on top third | Portrait crop guides | Claude checks by eye |
-| 8 | Score against average human taste | AVA / NIMA | Planned |
+| 8 | Score against average human taste | AVA / NIMA | Built (`jogo score`) |
 
 ## What's honest about today
 
