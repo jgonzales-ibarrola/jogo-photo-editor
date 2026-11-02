@@ -14,7 +14,7 @@ HSL_BANDS = {"red": 0, "orange": 30, "yellow": 60, "green": 120, "aqua": 180, "b
 HSL_SLIDERS = tuple(f"{band}_{part}" for band in HSL_BANDS for part in ("hue", "sat", "lum"))
 
 SLIDERS = (
-    "exposure", "temperature", "tint", "contrast", "highlights", "shadows",
+    "exposure", "brightness", "temperature", "tint", "contrast", "highlights", "shadows",
     "whites", "blacks", "clarity", "vibrance", "saturation",
     "sharpen", "noise_reduction", "vignette", "grade_shadows", "grade_midtones", "grade_highlights",
 ) + HSL_SLIDERS
@@ -30,6 +30,7 @@ class Settings:
     auto_strength: float = 1.0   # 0..1, how much of the auto fix to apply.
     auto_skin: bool = True       # After the look, nudge skin back toward the skin tone line (docs/08).
     exposure: float = 0.0
+    brightness: float = 0.0       # Midtones lighter, black and white stay put (Lightroom 3 "Brightness").
     temperature: float = 0.0
     tint: float = 0.0
     contrast: float = 0.0

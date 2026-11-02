@@ -21,6 +21,10 @@ Use when the whole photo is too dark or too bright.
 +1 doubles the light, −1 halves it.
 Too much: bright areas turn pure white and lose all detail.
 
+**Brightness** — the middle tones only (faces, walls), not the blackest or whitest parts.
+Use when the photo is dark but a window or lamp is already bright, so exposure would blow it out.
+Too much: the photo looks flat and washed out.
+
 **Highlights** — only the bright areas (sky, clouds, white walls, shiny skin).
 Pull it **down** when the sky looks white instead of blue.
 Too much: skies turn gray and flat.

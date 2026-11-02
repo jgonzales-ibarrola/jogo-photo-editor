@@ -43,9 +43,12 @@ Legend: `[x]` built   `[~]` partly built / done by Claude by eye   `[ ]` planned
                     │  middle brightness < target? ──yes─┼─> exposure up 90% of the way
                     │        │                           │     (max +2.5 EV, FiveK)
                     │        │                           │     BUT neon/colored lights > 1%
-                    │        │                           │     -> cap +0.2 EV (keep lights sharp)
+                    │        │                           │     -> stop before the lights clip
+                    │        │                           │     (neon stays at +0.2 EV)
                     │        │                           │     AND stop before brightest 5%
                     │        │                           │     passes L* 90 (FiveK: pros ~80)
+                    │  exposure held back? ──────────yes─┼─> brightness (midtones) up instead,
+                    │        │                           │     max +0.5 (FiveK + iPhone check)
                     │  very bright (median > 0.68)? ─yes─┼─> exposure down a little
                     │  near-white > 0.5%? ───────────yes─┼─> highlights down (recover sky)
                     │  near-black > 3%? ─────────────yes─┼─> shadows up

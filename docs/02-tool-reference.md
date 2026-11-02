@@ -93,6 +93,7 @@ Start small: 0.1 to 0.3 is a visible change. Same sign convention as Lightroom.
 | Slider | + does | − does |
 |---|---|---|
 | `--exposure` | Brighter. +1 = twice as bright. | Darker. |
+| `--brightness` | Lighter midtones; black and white stay put. | Darker midtones. |
 | `--temperature` | Warmer (orange). | Cooler (blue). |
 | `--tint` | More magenta. | More green. |
 | `--contrast` | Darks darker, brights brighter. | Flatter, softer. |

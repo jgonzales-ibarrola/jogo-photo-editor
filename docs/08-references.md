@@ -184,6 +184,19 @@ as much as red (plus a tiny green change), which changes only warmth, like Light
 slider. Overall a* now matches the pros (2.3 vs 2.2); `natural` 3.53 -> 3.35, `night` 4.51 -> 4.16.
 Highlights are still a little green (a* −1.5 vs +0.4), near the edge of visible; not from white balance.
 
+**Midtone lift when exposure is held back (2026-11-02).** On 61 of 100 FiveK photos the highlight
+guard or the neon rule held exposure back, and those stayed far darker than the pros' (indoor
+people: L* 29 vs 53) while their brightest parts already matched. The pros lifted the midtones
+instead: FiveK was edited in Lightroom 3, which had a "Brightness" slider (midtones up, black and
+white fixed). New slider `brightness` (a midtone bump, `adjust._tone_lut`), and auto gives it 0.5
+per EV that was held back, max +0.5. Tried and rejected: a power curve (lifted the darkest parts
+3x: a black speaker turned gray), and more than +0.5 (faces looked bleached on an iPhone photo,
+because iPhone photos start well exposed). The neon rule now stops exposure where the colored
+lights would clip (neon tubes still get +0.2) instead of +0.2 for any colored area: it fired on
+39 of 300 FiveK photos, mostly colorful clothes and flowers, and on iPhone 0431 in daylight.
+Result (`check --fast`): `natural` 3.35 -> 2.15, `night` 4.16 -> ~3.4. Indoor people still ~7.5:
+their gap is now color (warmth b 13 vs 9, chroma 19.5 vs 16.5), not brightness.
+
 Caveat: FiveK inputs are flat Nikon/Canon raws, darker than a finished iPhone photo. The *targets*
 (experts' L*, chroma, warmth) transfer; the size of the gap on iPhone photos will be smaller.
 

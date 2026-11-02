@@ -50,12 +50,14 @@ def _apply_lut(img: np.ndarray, lut: np.ndarray) -> None:
 
 
 def _tone_lut(gain: float, s: Settings) -> np.ndarray:
-    """Exposure/white balance gain (in linear light) + highlight rolloff + blacks/whites, as one curve."""
+    """Exposure/white balance gain (in linear light) + highlight rolloff + brightness + blacks/whites, as one curve."""
     y = _X ** GAMMA * gain
     knee, span = 0.8, 0.2  # Above the knee, bright values roll off smoothly instead of clipping hard.
     over = y > knee
     y[over] = knee + span * (1.0 - np.exp(-(y[over] - knee) / span))
     y = np.clip(y, 0.0, 1.0) ** (1 / GAMMA)
+    if s.brightness:  # midtone bump: +1 lifts 0.5 to 0.7 and 0.25 to 0.4; black, white and deep
+        y = y + 0.8 * s.brightness * y * (1.0 - y)  # shadows barely move, so dark areas stay dark
 
     # Blacks and whites move the darkest and brightest tones. Same sign as Lightroom: + is lighter.
     if s.blacks < 0:  # deeper blacks: values below the cut become pure black
@@ -240,13 +242,13 @@ def apply(img: np.ndarray, s: Settings, wb_gains: np.ndarray | None = None) -> n
     img = np.clip(img, 0.0, 1.0, out=img)
     h, w = img.shape[:2]
 
-    # 1-2. Exposure, white balance, blacks, whites: one lookup curve per color channel.
+    # 1-2. Exposure, white balance, brightness, blacks, whites: one lookup curve per color channel.
     gains = np.ones(3, dtype=np.float32) if wb_gains is None else wb_gains.astype(np.float32)
     gains = gains * np.array(
         [1 + 0.15 * s.temperature, 1 - 0.10 * s.tint, 1 - 0.15 * s.temperature], dtype=np.float32
     )
     gains *= np.float32(2.0 ** s.exposure)
-    if not np.allclose(gains, 1.0) or s.blacks or s.whites:
+    if not np.allclose(gains, 1.0) or s.blacks or s.whites or s.brightness:
         for c in range(3):
             channel = np.ascontiguousarray(img[..., c])
             _apply_lut(channel, _tone_lut(float(gains[c]), s))

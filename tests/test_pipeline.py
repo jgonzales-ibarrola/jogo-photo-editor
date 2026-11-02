@@ -51,6 +51,20 @@ def test_auto_does_not_blow_out_bright_subject_on_dark_background():
     assert auto.analyze(dark).offsets["exposure"] > 1
 
 
+def test_auto_lifts_midtones_when_window_holds_exposure_back():
+    img = np.full((200, 300, 3), 0.2, np.float32)  # dim room
+    img[:, :40] = 0.95  # bright window
+    a = auto.analyze(img)
+    assert a.offsets.get("exposure", 0) < 0.5 and a.offsets["brightness"] > 0.2
+
+
+def test_brightness_lifts_midtones_keeps_black_and_white():
+    img = np.array([[[0.0] * 3, [0.25] * 3, [1.0] * 3]], np.float32)
+    out = adjust.apply(img.copy(), Settings(brightness=1.0))
+    assert out[0, 0, 0] < 0.01 and out[0, 2, 0] > 0.97  # (0.98: the usual highlight rolloff)
+    assert out[0, 1, 0] > 0.4
+
+
 def test_auto_adds_color_only_to_dull_photos():
     rng = np.random.default_rng(0)
     gray = np.clip(0.45 + rng.normal(0, 0.1, (200, 300, 1)), 0, 1).repeat(3, 2).astype(np.float32)

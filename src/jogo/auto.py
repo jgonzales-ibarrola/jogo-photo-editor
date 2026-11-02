@@ -16,6 +16,9 @@ EV_MAX = 2.5           # FiveK: very dark inputs got +1.9 to +2.4 EV from the ex
 EV_MIN = -0.28         # Darkening stays as gentle as before FiveK (it only says "brighter").
 HIGH_LIMIT = 0.76      # FiveK: experts' brightest 5% sit at L* ~80. Exposure stops at L* 90
                        # (linear 0.76); the highlights slider then pulls it back toward 80.
+HELD_TO_BRIGHTNESS = 0.5  # Brightness per EV that a guard held back (FiveK: pros lift midtones instead).
+BRIGHTNESS_MAX = 0.5     # More looked bleached on faces in iPhone photos (already well exposed).
+LIGHT_LIMIT = 0.8      # Colored lights may be brightened up to here (linear): where the rolloff starts.
 DULL_CHROMA = 14.0     # FiveK: below this Lab chroma, experts added more color the duller it was.
 DULL_VIBRANCE = 0.35   # Vibrance added to a completely gray photo; less as color rises.
 DARK_SCENE = 0.2       # Median brightness of a night/lamp-lit scene.
@@ -77,7 +80,8 @@ def analyze(img: np.ndarray, auto_wb: bool = True, strength: float = 1.0) -> Ana
 
     # Neon and colored lamps: pure blue/red is dark by luminance even when the channel is maxed out,
     # so brightening the "dark" photo blows the lights into a blur.
-    colored_lights = float(((top > 0.6) & (spread > 0.6)).mean() * 100)
+    colored = (top > 0.6) & (spread > 0.6)
+    colored_lights = float(colored.mean() * 100)
 
     # A room or street lit only by orange lamps has no gray left to measure. Then use the whole
     # photo's average ("gray world", docs/08). Not for neon scenes: their color is the subject.
@@ -95,11 +99,18 @@ def analyze(img: np.ndarray, auto_wb: bool = True, strength: float = 1.0) -> Ana
     ev = float(np.clip(np.log2((TARGET_MIDTONE / max(median, 1e-3)) ** GAMMA) * EV_SHARE, EV_MIN, EV_MAX))
     if ev < 0 and median < 0.68:
         ev = 0.0
-    lit_scene = ev > 0.3 and colored_lights > 1
-    if lit_scene:
-        ev = 0.2
-        a.notes.append(f"Dark scene with colored lights ({colored_lights:.0f}% of the photo, e.g. neon) "
-                       "-> kept dark so the lights stay sharp and readable.")
+    wanted = ev
+    # Brighten only as far as the colored areas can go before their strongest channel clips.
+    # A neon tube is already near the top (stays at +0.2); a red shirt in a dim room is not.
+    lit_scene = False
+    if ev > 0.3 and colored_lights > 1:
+        light = float(np.percentile(top[colored], 90)) ** GAMMA
+        light_cap = max(0.2, float(np.log2(LIGHT_LIMIT / light)))
+        if ev > light_cap:
+            lit_scene = True
+            ev = light_cap
+            a.notes.append(f"Dark scene with colored lights ({colored_lights:.0f}% of the photo, e.g. neon) "
+                           f"-> exposure held at {ev * k:+.2f} so the lights stay sharp and readable.")
     # A bright subject on a dark background (white shirt by a black speaker) has a low median,
     # but brightening it blows the subject out. Stop before the brightest 5% passes the limit.
     p95 = float(np.percentile(lum, 95))
@@ -111,6 +122,12 @@ def analyze(img: np.ndarray, auto_wb: bool = True, strength: float = 1.0) -> Ana
     if abs(ev) >= 0.1:
         a.offsets["exposure"] = round(ev * k, 2)
         a.notes.append(f"Photo is {'dark' if ev > 0 else 'bright'} -> exposure {ev * k:+.2f} EV.")
+    # When a guard held exposure back, lift the midtones instead: black and white don't move, so
+    # windows, lamps and neon letters stay as they are (FiveK: pros did this with Lightroom's Brightness).
+    if wanted - ev > 0.2:
+        amt = min(BRIGHTNESS_MAX, (wanted - ev) * HELD_TO_BRIGHTNESS)
+        a.offsets["brightness"] = round(amt * k, 2)
+        a.notes.append(f"Exposure was held back -> brightness {amt * k:+.2f} to lift the midtones instead.")
 
     if bright_pct > 0.5 or (ev > 0.3 and p995 > 0.9):
         amt = -min(0.6, 0.2 + bright_pct / 10)
