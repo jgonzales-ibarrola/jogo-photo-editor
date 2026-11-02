@@ -29,6 +29,8 @@ beige walls read as gray, and a stronger white balance hurt other scenes).
 Done: `night` got less orange/yellow saturation (night indoors 8.63 -> 6.05, outdoors 5.12 -> 2.73).
 Done: `gold` tuned toward the pros, greens still muted (outdoor people 7.44 -> 5.68; `airy` 3.96).
 Done: `tropical` tuned the same way (9.24 -> 6.51).
+Done: `amber` 5.38 -> 2.74, `beach` 5.35 -> 3.63, `landscape` 4.16 -> 3.53; `food` already 2.43.
+All scene-table looks are now tuned against FiveK. Style looks are left as they are on purpose.
 Waiting on owner: `photos/out/compare-gold-airy` (3 ATV photos, new `gold` vs `airy`, post size).
 Which looks better on the iPhone? Is skin too yellow? Log the answer in my-style.md.
 

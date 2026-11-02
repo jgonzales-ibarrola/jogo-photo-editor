@@ -6,3 +6,4 @@ clarity = 0.3
 vibrance = 0.35
 sharpen = 0.4
 noise_reduction = 0.15
+temperature = 0.1

@@ -210,6 +210,14 @@ yellow/orange muted less, a bit warmer; greens stay muted (-0.4). `gold` 7.44 ->
 21.1 (pros 22.3), so skin is not more yellow than the pros'.
 `tropical` got the same change (brighter, softer, yellow/orange muted less, +0.1 temperature,
 vibrance 0.15; teal shadows and muted greens kept): outdoor people 9.24 -> 6.51, skin hue 19.8.
+Other scene-table looks (`check --fast --scene`, 2026-11-02):
+- `amber`, outdoor buildings: 5.38 -> 2.74 (brighter, +0.12 temperature, yellow/orange muted less,
+  vibrance 0.12; greens stay muted).
+- `beach`, outdoor nature: 5.35 -> 3.63 (contrast 0.1 -> 0.25, +0.1 temperature, highlights -0.5 -> -0.35).
+- `landscape`, outdoor nature: 4.16 -> 3.53 (+0.1 temperature).
+- `food`, closest FiveK scene (indoor objects): 2.43, unchanged.
+Style looks (`bw`, `film`, `cinematic`, `rose-gold`, `vivid`, ...) are not tuned: they are meant
+to differ from the pros' neutral average.
 
 Caveat: FiveK inputs are flat Nikon/Canon raws, darker than a finished iPhone photo. The *targets*
 (experts' L*, chroma, warmth) transfer; the size of the gap on iPhone photos will be smaller.
