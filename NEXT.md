@@ -26,7 +26,8 @@ Merged and pushed 2026-11-02 (branch `adaptive-grade`):
 `fivek.py check --scene "<scene>" --looks a,b,c` compares looks on one scene (names as in the report).
 Done: indoor people -> `bright` (5.00 vs `natural` 7.87; auto alone can't remove that warmth because
 beige walls read as gray, and a stronger white balance hurt other scenes).
-Next: outdoor people (`airy`? check skin on iPhone), night indoors (~11, the weakest now).
+Done: `night` got less orange/yellow saturation (night indoors 8.63 -> 6.05, outdoors 5.12 -> 2.73).
+Open: outdoor people: `airy` 3.96 vs `gold` 7.44 / `tropical` 9.24. Owner decides (main style).
 
 Check a change in ~3 min: `.venv/Scripts/python research/fivek.py check --fast --looks natural,night`
 (lower `dist` = closer to the pros; compares old and new on the same 100 photos).

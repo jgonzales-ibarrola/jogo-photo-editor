@@ -1,7 +1,9 @@
-description = "Night scenes. Brightens like pro editors do (FiveK), protects lights, cleans noise."
+description = "Night scenes. Brightens and tames lamp orange like pro editors (FiveK), protects lights, cleans noise."
 highlights = -0.4
 shadows = 0.1
 contrast = 0.15
 vibrance = 0.15
 sharpen = 0.15
 noise_reduction = 0.6
+yellow_sat = -0.25
+orange_sat = -0.12

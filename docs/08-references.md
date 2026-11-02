@@ -201,6 +201,8 @@ made them even more orange (b 25 -> 44; pros took it to 9). The whole-photo aver
 is now used for any photo with no gray when it is strongly orange (warmth > 0.3), not only at
 night. Indoor people 7.50 -> 6.67; none of the 46 iPhone test photos changed.
 Indoor people look: `bright` 5.00 vs `natural` 7.87 (26 photos, full check). Scene table changed.
+`night` preset: added yellow -0.25 and orange -0.12 saturation (like `bright`): night indoors
+8.63 -> 6.05, night outdoors 5.12 -> 2.73. Lamp orange was the gap (b 10.6 vs pros 6.6).
 
 Caveat: FiveK inputs are flat Nikon/Canon raws, darker than a finished iPhone photo. The *targets*
 (experts' L*, chroma, warmth) transfer; the size of the gap on iPhone photos will be smaller.
