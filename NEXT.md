@@ -31,7 +31,9 @@ Done: `gold` tuned toward the pros, greens still muted (outdoor people 7.44 -> 5
 Done: `tropical` tuned the same way (9.24 -> 6.51).
 Done: `amber` 5.38 -> 2.74, `beach` 5.35 -> 3.63, `landscape` 4.16 -> 3.53; `food` already 2.43.
 All scene-table looks are now tuned against FiveK. Style looks are left as they are on purpose.
-Waiting on owner: `photos/out/compare-gold-airy` (3 ATV photos, new `gold` vs `airy`, post size).
+Waiting on owner (2026-11-02), one iPhone review of everything:
+- `photos/out/compare-gold-airy`: 3 ATV photos, new `gold` vs `airy` (outdoor people look).
+- `photos/out/iphone-check`: indoor people `bright` (0039, 0396), food `food` (0388), white shirt `gold` (0443).
 Which looks better on the iPhone? Is skin too yellow? Log the answer in my-style.md.
 
 Check a change in ~3 min: `.venv/Scripts/python research/fivek.py check --fast --looks natural,night`
