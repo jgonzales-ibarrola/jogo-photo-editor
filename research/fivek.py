@@ -5,6 +5,7 @@
   python research/fivek.py status           # how many sample photos are complete (fetch resumes)
   python research/fivek.py measure          # tone/color stats: input, each expert, each of our presets
   python research/fivek.py report           # expert average vs our looks, per scene
+  python research/fivek.py check --looks natural   # fast re-run of some looks after a tuning change
 
 Data lives in research/data/ (git-ignored). Big expert TIFFs are shrunk to 1024 px 16-bit PNGs and
 deleted. Source: https://data.csail.mit.edu/graphics/fivek/ (see docs/08-references.md).
@@ -222,6 +223,39 @@ def cmd_measure(args) -> None:
     print(f"-> {out}")
 
 
+def cmd_check(args) -> None:
+    """Re-run some looks only (fast), to see if a tuning change moved them toward the experts.
+    The decoded input is cached as input.tif so the slow raw decode happens once."""
+    import tifffile
+    import time
+    presets = load_presets(cli.USER_PRESETS)
+    looks = args.looks.split(",")
+    out = DATA / "stats_check.csv"
+    fields = ["name", "subject", "light", "location", "time", "source"] + STATS
+    sample_rows = list(csv.DictReader(open(DATA / "sample.csv", encoding="utf-8")))
+    t0 = time.perf_counter()
+    with open(out, "w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(f, fieldnames=fields)
+        w.writeheader()
+        for i, r in enumerate(sample_rows, 1):
+            d = DATA / "photos" / r["name"]
+            cache = d / "input.tif"
+            if cache.exists():
+                base = tifffile.imread(cache).astype(np.float32) / 65535
+            else:
+                base = files.resize_long_edge(files.load(d / "input.dng").pixels, EDGE)
+                save_png16(base, cache)
+            for name in looks:
+                img = cli.edit_pixels(base.copy(), presets[name].settings)
+                w.writerow({"name": r["name"], "subject": r["subject"], "light": r["light"],
+                            "location": r["location"], "time": r["time"], "source": f"new_{name}", **stats(img)})
+            if i % 25 == 0:
+                print(f"[{i}/{len(sample_rows)}] {time.perf_counter() - t0:.0f}s", flush=True)
+    print(f"-> {out}")
+    args.extra = out
+    cmd_report(args)
+
+
 # ---------- report ----------
 
 # How much each stat matters when asking "which look is closest to the experts".
@@ -233,14 +267,22 @@ WEIGHTS = {"L_median": 1 / 4, "contrast": 1 / 6, "chroma": 1 / 3, "a": 1 / 2, "b
 def cmd_report(args) -> None:
     import statistics as st
     rows = list(csv.DictReader(open(DATA / "stats.csv", encoding="utf-8")))
+    extra = getattr(args, "extra", None)
+    if extra:  # `check`: old looks vs the re-run ("new_") versions only
+        rows += list(csv.DictReader(open(extra, encoding="utf-8")))
+        keep = {f"{p}_{n}" for n in args.looks.split(",") for p in ("look", "new")}
+        rows = [r for r in rows if not r["source"].startswith("look_") or r["source"] in keep]
     for r in rows:
         for k in STATS:
             r[k] = float(r[k]) if r[k] not in ("", "nan") else float("nan")
     by = defaultdict(lambda: defaultdict(list))  # scene -> source -> rows
 
     def scene(r):
-        if r["time"] != "day":
-            return f"night / {r['subject']}"
+        # Night and dusk light change the edit more than the subject does; "unknown" time is mostly daylight-like.
+        if r["time"] == "night":
+            return f"night / {r['location']}"
+        if r["time"] == "dawn or dusk":
+            return f"dusk / {r['location']}"
         return f"{r['location']} / {r['subject']}"
 
     for r in rows:
@@ -261,14 +303,14 @@ def cmd_report(args) -> None:
         print(f"{'source':<18}" + "".join(f"{k:>11}" for k in STATS))
         target = {k: mean(src["experts"], k) for k in STATS}
         scored = []
-        for s in ["input", "experts"] + sorted(k for k in src if k.startswith("look_")):
+        for s in ["input", "experts"] + sorted(k for k in src if k.startswith(("look_", "new_"))):
             m = {k: mean(src[s], k) for k in STATS}
             dist = sum(w * abs(m[k] - target[k]) for k, w in WEIGHTS.items() if m[k] == m[k])
-            if s.startswith("look_"):
+            if s.startswith(("look_", "new_")):
                 scored.append((dist, s))
             print(f"{s:<18}" + "".join(f"{m[k]:11.1f}" for k in STATS) + f"   dist {dist:.2f}")
         scored.sort()
-        print("closest to experts: " + ", ".join(f"{s[5:]} ({d:.2f})" for d, s in scored[:4]))
+        print("closest to experts: " + ", ".join(f"{s.removeprefix('look_')} ({d:.2f})" for d, s in scored[:4]))
 
 
 def cmd_status(args) -> None:
@@ -290,6 +332,9 @@ def main() -> None:
     m.add_argument("--fresh", action="store_true", help="Start over instead of resuming.")
     m.set_defaults(f=cmd_measure)
     sub.add_parser("report").set_defaults(f=cmd_report)
+    c = sub.add_parser("check")
+    c.add_argument("--looks", default="natural", help="Comma-separated presets to re-run.")
+    c.set_defaults(f=cmd_check)
     args = p.parse_args()
     args.f(args)
 

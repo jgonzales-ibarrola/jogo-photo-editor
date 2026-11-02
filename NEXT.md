@@ -1,7 +1,7 @@
 # Next: work in progress
 
 Claude: read this at the start of every session. Update it when a step is done. Delete a section when it's finished.
-Last updated: 2026-11-01.
+Last updated: 2026-11-02.
 
 ## Where we are
 
@@ -37,12 +37,18 @@ Start-Process .venv\Scripts\python.exe -ArgumentList 'research/fivek.py','measur
 ### Steps
 
 1. [x] Download 300 photos (fetch checks file size and handles names with spaces).
-2. [ ] `measure` (running), then `python research/fivek.py report`. `report` hasn't run on real
-       data yet: check its output makes sense, fix bugs.
-3. [ ] Write findings into docs/08 ("What we measured"): per scene, expert average vs input vs our
-       looks; which look is closest; where we're off (too bright? too colorful? wrong tint?).
+2. [x] `measure` finished 2026-11-01 17:25 (300/300). `report` fixed (dusk/unknown time were
+       lumped into "night"). Output saved to `research/data/fivek/report.txt`.
+3. [x] Findings written in docs/08 ("What we measured"). Short version: pros are brighter
+       (+8–11 L*), more contrast, more color on nature, and remove orange lamp color at night/indoors.
+       Auto exposure caps at ~+1 EV (`auto.py` line ~60): likely the main brightness gap.
 4. [ ] Update the scene -> look table in docs/09 from the data, and tune presets toward the expert
        average. Re-run `report` to confirm they got closer. Run pytest.
+4b. [x] First FiveK rules are in `auto.py` (2026-11-02, tests pass): exposure 90% of the way up to
+       +2.5 EV, highlight guard (stop at L* 90), vibrance for dull photos, stronger lamp-color removal
+       at night. Checked on all photos in `photos/in`: only small changes, except 0443 (white shirt,
+       black speaker), which the guard now saves. FiveK check: `natural` distance 6.25 -> 4.18.
+       Remaining gaps (docs/08): still ~9 L* darker, indoor/night too warm, highlights slightly green.
 5. [ ] Build the adaptive color grade (roadmap item, docs/09 block 4): from the FiveK data, fit simple
        rules like "pros add less color when the photo is already colorful", "pros brighten dark photos
        by X". Use input stats -> expert output stats (simple linear fits per stat, per scene).

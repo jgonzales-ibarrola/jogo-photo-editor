@@ -43,6 +43,33 @@ def test_auto_brightens_dark_photo():
     assert adjust.luminance(out).mean() > adjust.luminance(dark).mean()
 
 
+def test_auto_does_not_blow_out_bright_subject_on_dark_background():
+    img = np.full((200, 300, 3), 0.05, np.float32)  # black speaker behind
+    img[:, 100:200] = 0.9  # white shirt: a third of the photo
+    assert auto.analyze(img).offsets.get("exposure", 0) < 0.1
+    dark = np.full((200, 300, 3), 0.15, np.float32)  # evenly dark photo still gets brightened
+    assert auto.analyze(dark).offsets["exposure"] > 1
+
+
+def test_auto_adds_color_only_to_dull_photos():
+    rng = np.random.default_rng(0)
+    gray = np.clip(0.45 + rng.normal(0, 0.1, (200, 300, 1)), 0, 1).repeat(3, 2).astype(np.float32)
+    assert auto.analyze(gray).offsets["vibrance"] > 0.2
+    colorful = gray.copy()
+    colorful[..., 2] *= 0.4  # strong yellow everywhere
+    assert "vibrance" not in auto.analyze(colorful).offsets
+
+
+def test_auto_removes_more_lamp_color_at_night_than_in_daylight():
+    def warm(level):
+        img = np.full((200, 300, 3), level, np.float32)
+        img[..., 0] *= 1.05  # orange cast on a gray wall: red > green > blue
+        img[..., 2] *= 0.8
+        return img
+    night, day = auto.analyze(warm(0.17)).wb_gains, auto.analyze(warm(0.5)).wb_gains
+    assert night[2] > day[2] > 1  # both boost blue; night removes more of the cast
+
+
 def test_auto_keeps_neon_scene_dark():
     img = np.full((300, 400, 3), 0.02, np.float32)
     img[100:150, 50:350] = (0.05, 0.05, 0.95)  # blue neon: dark by luminance, channel near max

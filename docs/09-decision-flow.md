@@ -40,15 +40,21 @@ Legend: `[x]` built   `[~]` partly built / done by Claude by eye   `[ ]` planned
                     ┌─────────────────▼──────────────────┐
  [x] BLOCK 3        │  MEASURE + BASE FIX (auto.py)      │  research: fix the base first
      auto.py        │                                    │
-                    │  middle brightness < target? ──yes─┼─> exposure up (max +1.5 EV)
+                    │  middle brightness < target? ──yes─┼─> exposure up 90% of the way
+                    │        │                           │     (max +2.5 EV, FiveK)
                     │        │                           │     BUT neon/colored lights > 1%
                     │        │                           │     -> cap +0.2 EV (keep lights sharp)
+                    │        │                           │     AND stop before brightest 5%
+                    │        │                           │     passes L* 90 (FiveK: pros ~80)
                     │  very bright (median > 0.68)? ─yes─┼─> exposure down a little
                     │  near-white > 0.5%? ───────────yes─┼─> highlights down (recover sky)
                     │  near-black > 3%? ─────────────yes─┼─> shadows up
                     │  blacks look gray (hazy)? ─────yes─┼─> blacks down
+                    │  colors dull (chroma < 14)? ───yes─┼─> vibrance up, more if duller (FiveK)
                     │  gray areas tinted? ───────────yes─┼─> white balance, HALF way
                     │        │                           │     (sky + leaves don't count)
+                    │  dark + orange lamps? ─────────yes─┼─> white balance 3/4 way (FiveK);
+                    │        │                           │     no gray in photo -> gray world
                     │  nothing wrong ────────────────────┼─> change nothing
                     └─────────────────┬──────────────────┘
                                       │
