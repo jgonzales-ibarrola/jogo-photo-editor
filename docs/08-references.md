@@ -208,6 +208,8 @@ Outdoor people: `airy` 3.96, `gold` 7.44 (26 photos). `gold` was darker, less co
 (owner's main look, no iPhone feedback yet) but moved it toward the pros: brighter, less contrast,
 yellow/orange muted less, a bit warmer; greens stay muted (-0.4). `gold` 7.44 -> 5.68. Skin hue
 21.1 (pros 22.3), so skin is not more yellow than the pros'.
+`tropical` got the same change (brighter, softer, yellow/orange muted less, +0.1 temperature,
+vibrance 0.15; teal shadows and muted greens kept): outdoor people 9.24 -> 6.51, skin hue 19.8.
 
 Caveat: FiveK inputs are flat Nikon/Canon raws, darker than a finished iPhone photo. The *targets*
 (experts' L*, chroma, warmth) transfer; the size of the gap on iPhone photos will be smaller.

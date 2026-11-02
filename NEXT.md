@@ -28,7 +28,9 @@ Done: indoor people -> `bright` (5.00 vs `natural` 7.87; auto alone can't remove
 beige walls read as gray, and a stronger white balance hurt other scenes).
 Done: `night` got less orange/yellow saturation (night indoors 8.63 -> 6.05, outdoors 5.12 -> 2.73).
 Done: `gold` tuned toward the pros, greens still muted (outdoor people 7.44 -> 5.68; `airy` 3.96).
-Ask the owner: new `gold` vs `airy` on the iPhone. Not checked yet: `tropical` (sunny people, 9.24).
+Done: `tropical` tuned the same way (9.24 -> 6.51).
+Waiting on owner: `photos/out/compare-gold-airy` (3 ATV photos, new `gold` vs `airy`, post size).
+Which looks better on the iPhone? Is skin too yellow? Log the answer in my-style.md.
 
 Check a change in ~3 min: `.venv/Scripts/python research/fivek.py check --fast --looks natural,night`
 (lower `dist` = closer to the pros; compares old and new on the same 100 photos).
