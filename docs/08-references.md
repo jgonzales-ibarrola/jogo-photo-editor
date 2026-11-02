@@ -164,8 +164,8 @@ Still off:
   that dark, so we don't chase it. Night preset now uses the full auto fix (was 40%): night photos
   distance 9.95 -> 5.86.
 - Indoor people (b 12.3 vs 8.6) and night indoors (10.2 vs 6.6) are still too warm.
-- Highlights turned slightly green (a* −1.9 vs experts +0.5). Leaving the tint alone (below) fixed
-  the overall color, but highlights are still ~−2. Next suspect: the per-channel highlight rolloff.
+- Highlights turned slightly green (a* −1.9 vs experts +0.5). Mostly fixed by the white balance
+  changes below (now −1.5). The rest likely comes from the per-channel highlight rolloff.
 - Daylight: pros warm photos a little more than we do (outdoor people b 4.8 vs 9.1).
 
 **White balance from FiveK (2026-11-02).** We measured the cast in the gray areas of each input and
@@ -178,6 +178,11 @@ neutral, and fixing half the tint. Result (`check --fast`, 100 photos): `natural
 night outdoors 9.50 -> 3.60, `night` preset 9.33 -> 4.51. Still weakest: indoor people and night
 indoors (distance ~11-12). On iPhone photos: warm casts get cooled up to ~15% (was ~8%); on a
 portrait this made skin less orange without looking cold.
+Then (same day): lowering red and raising blue by equal amounts also moves Lab a* (green-magenta)
+by 1/4 as much as warmth, so cooling a photo turned it a bit green. The fix moves blue about twice
+as much as red (plus a tiny green change), which changes only warmth, like Lightroom's temperature
+slider. Overall a* now matches the pros (2.3 vs 2.2); `natural` 3.53 -> 3.35, `night` 4.51 -> 4.16.
+Highlights are still a little green (a* −1.5 vs +0.4), near the edge of visible; not from white balance.
 
 Caveat: FiveK inputs are flat Nikon/Canon raws, darker than a finished iPhone photo. The *targets*
 (experts' L*, chroma, warmth) transfer; the size of the gap on iPhone photos will be smaller.

@@ -54,8 +54,9 @@ Start-Process .venv\Scripts\python.exe -ArgumentList 'research/fivek.py','measur
        Remaining gaps (docs/08): still ~9 L* darker, indoor/night too warm, highlights slightly green.
 5a. [x] 2026-11-02: white balance from FiveK: temperature 2/3 of the way to neutral in any light,
        tint left alone (docs/08 "White balance from FiveK"). `fivek.py check --fast` = 2-3 min check.
-       Open: highlights still a bit green (a* -2 vs +0.4), indoor people / night indoors still the
-       weakest scenes (distance ~11-12).
+       Warmth fix now moves blue ~2x red so it doesn't turn photos green (natural 3.35, night 4.16).
+       Open: highlights still a little green (a* -1.5 vs +0.4; suspect per-channel rolloff in
+       adjust._tone_lut), indoor people / night indoors still the weakest scenes (distance ~10-13).
 5. [~] Build the adaptive color grade (roadmap item, docs/09 block 4): from the FiveK data, fit simple
        rules like "pros add less color when the photo is already colorful", "pros brighten dark photos
        by X". Use input stats -> expert output stats (simple linear fits per stat, per scene).

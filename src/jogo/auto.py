@@ -20,6 +20,10 @@ DULL_CHROMA = 14.0     # FiveK: below this Lab chroma, experts added more color 
 DULL_VIBRANCE = 0.35   # Vibrance added to a completely gray photo; less as color rises.
 DARK_SCENE = 0.2       # Median brightness of a night/lamp-lit scene.
 WB_KEEP = 1 / 3        # FiveK: pros keep ~1/3 of a blue/orange cast, the same in daylight and at night.
+# Gains (log red, green, blue) that make a gray warmer without making it greener or darker: blue
+# moves twice as much as red. Equal and opposite red/blue moves also shift green-magenta (Lab a*).
+WARM_DIR = np.array([1.0, -0.083, -2.12])
+B_STAR = np.array([0.243, 0.757, -1.0])  # How much each log gain moves Lab b* (warmth) on a gray.
 
 
 @dataclass
@@ -134,10 +138,9 @@ def analyze(img: np.ndarray, auto_wb: bool = True, strength: float = 1.0) -> Ana
         # Split the cast like Lightroom's two sliders: temperature (blue-orange) and tint
         # (green-magenta). FiveK: pros remove 2/3 of the temperature cast in any light and leave
         # the tint (fixing it too turned our highlights green).
-        lr, lb = np.log(np.maximum(cast[[0, 2]] / cast[1], 1e-3))  # red and blue vs green; 0 = gray
-        temp = (lr - lb) / 2
-        fix = -temp * (1 - WB_KEEP) * k
-        gains = np.clip(np.exp(np.array([fix, 0.0, -fix])), 0.5, 1.5)
+        log_cast = np.log(np.maximum(cast / cast[1], 1e-3))  # red and blue vs green; 0 = gray
+        temp = float(B_STAR @ log_cast / (B_STAR @ WARM_DIR))  # how far along WARM_DIR the cast is
+        gains = np.clip(np.exp(-temp * (1 - WB_KEEP) * k * WARM_DIR), 0.5, 1.5)
         if np.abs(gains - 1.0).max() > 0.015:
             a.wb_gains = gains.astype(np.float32)
             if temp > 0:
