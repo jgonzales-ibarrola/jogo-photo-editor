@@ -51,10 +51,10 @@ Legend: `[x]` built   `[~]` partly built / done by Claude by eye   `[ ]` planned
                     │  near-black > 3%? ─────────────yes─┼─> shadows up
                     │  blacks look gray (hazy)? ─────yes─┼─> blacks down
                     │  colors dull (chroma < 14)? ───yes─┼─> vibrance up, more if duller (FiveK)
-                    │  gray areas tinted? ───────────yes─┼─> white balance, HALF way
-                    │        │                           │     (sky + leaves don't count)
-                    │  dark + orange lamps? ─────────yes─┼─> white balance 3/4 way (FiveK);
-                    │        │                           │     no gray in photo -> gray world
+                    │  gray areas blue/orange? ──────yes─┼─> white balance 2/3 way, any light
+                    │        │                           │     (FiveK); green/magenta tint left
+                    │        │                           │     alone; sky + leaves don't count
+                    │  dark + orange lamps, no gray? yes─┼─> gray world (whole-photo average)
                     │  nothing wrong ────────────────────┼─> change nothing
                     └─────────────────┬──────────────────┘
                                       │

@@ -52,7 +52,11 @@ Start-Process .venv\Scripts\python.exe -ArgumentList 'research/fivek.py','measur
        at night. Checked on all photos in `photos/in`: only small changes, except 0443 (white shirt,
        black speaker), which the guard now saves. FiveK check: `natural` distance 6.25 -> 4.18.
        Remaining gaps (docs/08): still ~9 L* darker, indoor/night too warm, highlights slightly green.
-5. [ ] Build the adaptive color grade (roadmap item, docs/09 block 4): from the FiveK data, fit simple
+5a. [x] 2026-11-02: white balance from FiveK: temperature 2/3 of the way to neutral in any light,
+       tint left alone (docs/08 "White balance from FiveK"). `fivek.py check --fast` = 2-3 min check.
+       Open: highlights still a bit green (a* -2 vs +0.4), indoor people / night indoors still the
+       weakest scenes (distance ~11-12).
+5. [~] Build the adaptive color grade (roadmap item, docs/09 block 4): from the FiveK data, fit simple
        rules like "pros add less color when the photo is already colorful", "pros brighten dark photos
        by X". Use input stats -> expert output stats (simple linear fits per stat, per scene).
        Put them in auto.py as plain rules with notes, cite docs/08. Add tests.

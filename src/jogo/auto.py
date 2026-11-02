@@ -19,6 +19,7 @@ HIGH_LIMIT = 0.76      # FiveK: experts' brightest 5% sit at L* ~80. Exposure st
 DULL_CHROMA = 14.0     # FiveK: below this Lab chroma, experts added more color the duller it was.
 DULL_VIBRANCE = 0.35   # Vibrance added to a completely gray photo; less as color rises.
 DARK_SCENE = 0.2       # Median brightness of a night/lamp-lit scene.
+WB_KEEP = 1 / 3        # FiveK: pros keep ~1/3 of a blue/orange cast, the same in daylight and at night.
 
 
 @dataclass
@@ -130,21 +131,20 @@ def analyze(img: np.ndarray, auto_wb: bool = True, strength: float = 1.0) -> Ana
             a.notes.append(f"Colors are dull (strength {chroma:.0f}) -> vibrance {vib * k:+.2f}.")
 
     if auto_wb and has_neutrals:
-        gray = cast[1]
-        warm = cast[0] > cast[2]
-        # Lamp-lit dark scenes: FiveK experts removed ~75% of a strong orange cast at night, but kept
-        # daylight warmth. So: halfway in daylight (fully neutral looks lifeless), more at night.
-        lamp = warm and median < DARK_SCENE
-        lim, share = (0.5, 0.75) if lamp else (0.15, 0.5)
-        gains = np.clip(np.array([gray / cast[0], 1.0, gray / cast[2]]), 1 - lim, 1 + lim)
-        gains = 1.0 + (gains - 1.0) * share * k
+        # Split the cast like Lightroom's two sliders: temperature (blue-orange) and tint
+        # (green-magenta). FiveK: pros remove 2/3 of the temperature cast in any light and leave
+        # the tint (fixing it too turned our highlights green).
+        lr, lb = np.log(np.maximum(cast[[0, 2]] / cast[1], 1e-3))  # red and blue vs green; 0 = gray
+        temp = (lr - lb) / 2
+        fix = -temp * (1 - WB_KEEP) * k
+        gains = np.clip(np.exp(np.array([fix, 0.0, -fix])), 0.5, 1.5)
         if np.abs(gains - 1.0).max() > 0.015:
             a.wb_gains = gains.astype(np.float32)
-            if lamp:
-                a.notes.append("Dark scene with orange lamp light -> white balance corrected 3/4 of the way.")
+            if temp > 0:
+                what = "orange lamp light" if median < DARK_SCENE else "a warm/orange color cast"
             else:
-                tone = "warm/orange" if warm else "cool/blue"
-                a.notes.append(f"Photo has a {tone} color cast -> white balance corrected halfway.")
+                what = "a cool/blue color cast"
+            a.notes.append(f"Photo has {what} -> white balance corrected 2/3 of the way.")
 
     if not a.notes:
         a.notes.append("Exposure and color already look good. Only the preset look is applied.")

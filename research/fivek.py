@@ -5,7 +5,8 @@
   python research/fivek.py status           # how many sample photos are complete (fetch resumes)
   python research/fivek.py measure          # tone/color stats: input, each expert, each of our presets
   python research/fivek.py report           # expert average vs our looks, per scene
-  python research/fivek.py check --looks natural   # fast re-run of some looks after a tuning change
+  python research/fivek.py check --looks natural   # re-run some looks after a tuning change (~30 min)
+  python research/fivek.py check --fast            # same on every 3rd photo, no face step (~2 min)
 
 Data lives in research/data/ (git-ignored). Big expert TIFFs are shrunk to 1024 px 16-bit PNGs and
 deleted. Source: https://data.csail.mit.edu/graphics/fivek/ (see docs/08-references.md).
@@ -169,7 +170,7 @@ STATS = ["L_median", "L_p05", "L_p95", "contrast", "chroma", "chroma_p90", "a", 
          "shadow_a", "shadow_b", "high_a", "high_b", "skin_hue"]
 
 
-def stats(img: np.ndarray) -> dict[str, float]:
+def stats(img: np.ndarray, faces: bool = True) -> dict[str, float]:
     """Brightness (L*), contrast, colorfulness (chroma), overall tint (a* green-red, b* blue-yellow),
     tint in shadows and highlights (= color grade), and face skin hue."""
     lab = to_lab(np.clip(img, 0, 1)).reshape(-1, 3)
@@ -181,7 +182,7 @@ def stats(img: np.ndarray) -> dict[str, float]:
            "chroma": c.mean(), "chroma_p90": np.percentile(c, 90), "a": a.mean(), "b": b.mean(),
            "shadow_a": a[sh].mean() if sh.any() else np.nan, "shadow_b": b[sh].mean() if sh.any() else np.nan,
            "high_a": a[hi].mean() if hi.any() else np.nan, "high_b": b[hi].mean() if hi.any() else np.nan}
-    faces = adjust.find_faces(img)
+    faces = adjust.find_faces(img) if faces else []
     hues = []
     for fx, fy, fw, fh in faces:
         h, w = img.shape[:2]
@@ -233,6 +234,8 @@ def cmd_check(args) -> None:
     out = DATA / "stats_check.csv"
     fields = ["name", "subject", "light", "location", "time", "source"] + STATS
     sample_rows = list(csv.DictReader(open(DATA / "sample.csv", encoding="utf-8")))
+    if args.fast:  # 100 photos, no skin hue: good enough to see if a change helps
+        sample_rows = sample_rows[::3]
     t0 = time.perf_counter()
     with open(out, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=fields)
@@ -248,7 +251,8 @@ def cmd_check(args) -> None:
             for name in looks:
                 img = cli.edit_pixels(base.copy(), presets[name].settings)
                 w.writerow({"name": r["name"], "subject": r["subject"], "light": r["light"],
-                            "location": r["location"], "time": r["time"], "source": f"new_{name}", **stats(img)})
+                            "location": r["location"], "time": r["time"], "source": f"new_{name}",
+                            **stats(img, faces=not args.fast)})
             if i % 25 == 0:
                 print(f"[{i}/{len(sample_rows)}] {time.perf_counter() - t0:.0f}s", flush=True)
     print(f"-> {out}")
@@ -269,7 +273,9 @@ def cmd_report(args) -> None:
     rows = list(csv.DictReader(open(DATA / "stats.csv", encoding="utf-8")))
     extra = getattr(args, "extra", None)
     if extra:  # `check`: old looks vs the re-run ("new_") versions only
-        rows += list(csv.DictReader(open(extra, encoding="utf-8")))
+        new = list(csv.DictReader(open(extra, encoding="utf-8")))
+        names = {r["name"] for r in new}  # compare on the same photos only
+        rows = [r for r in rows if r["name"] in names] + new
         keep = {f"{p}_{n}" for n in args.looks.split(",") for p in ("look", "new")}
         rows = [r for r in rows if not r["source"].startswith("look_") or r["source"] in keep]
     for r in rows:
@@ -334,6 +340,7 @@ def main() -> None:
     sub.add_parser("report").set_defaults(f=cmd_report)
     c = sub.add_parser("check")
     c.add_argument("--looks", default="natural", help="Comma-separated presets to re-run.")
+    c.add_argument("--fast", action="store_true", help="Every 3rd photo, skip faces (~2 min per look).")
     c.set_defaults(f=cmd_check)
     args = p.parse_args()
     args.f(args)

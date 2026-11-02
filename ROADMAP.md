@@ -20,7 +20,7 @@ Two tracks that grow together: **the tool** and **you**.
       use Apple's semantic masks in ProRAW (sky/skin/people) for local edits, check open LUT licenses
 - [x] Reference library with sources for every rule: [docs/08](docs/08-references.md) (2026-11-01)
 - [x] `jogo score`: NIMA + MUSIQ + LAION (trained on human ratings) to pick the best shots (2026-11-01)
-- [ ] Compare presets with MIT-Adobe FiveK Expert C (5,000 photos edited by pros)
+- [x] Compare presets with MIT-Adobe FiveK (300 photos x 5 pros; docs/08)
 - [ ] Adaptive color grade: the look reacts to the colors already in the photo
 - [x] Skin tone line check on detected faces (2026-11-01)
 - [x] `--crop-zoom`: tighter crops so the subject can sit on a thirds line (2026-11-01)

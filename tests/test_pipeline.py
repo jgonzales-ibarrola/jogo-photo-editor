@@ -60,14 +60,18 @@ def test_auto_adds_color_only_to_dull_photos():
     assert "vibrance" not in auto.analyze(colorful).offsets
 
 
-def test_auto_removes_more_lamp_color_at_night_than_in_daylight():
-    def warm(level):
-        img = np.full((200, 300, 3), level, np.float32)
-        img[..., 0] *= 1.05  # orange cast on a gray wall: red > green > blue
-        img[..., 2] *= 0.8
+def test_auto_white_balance_small_for_sun_warmth_large_for_lamp_orange():
+    def tinted(red, blue):
+        img = np.full((200, 300, 3), 0.5, np.float32)  # gray wall
+        img[..., 0] *= red
+        img[..., 2] *= blue
         return img
-    night, day = auto.analyze(warm(0.17)).wb_gains, auto.analyze(warm(0.5)).wb_gains
-    assert night[2] > day[2] > 1  # both boost blue; night removes more of the cast
+    lamp = auto.analyze(tinted(1.05, 0.8)).wb_gains
+    assert lamp[2] > 1.2 and lamp[0] < 1  # strong orange: mostly removed
+    sun = auto.analyze(tinted(1.02, 0.98)).wb_gains  # mild sun warmth: small fix
+    assert np.abs(sun - 1).max() < 0.05
+    shade = auto.analyze(tinted(0.97, 1.05)).wb_gains
+    assert shade[0] > 1 > shade[2]  # blue shade gets warmer
 
 
 def test_auto_keeps_neon_scene_dark():

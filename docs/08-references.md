@@ -147,7 +147,8 @@ What the pros do, in plain words:
 
 **Rules taken from it (2026-11-01, in `auto.py`):** exposure goes 90% of the way to the target
 (was 70%), up to +2.5 EV (was ~+1); dull photos (chroma < 14) get vibrance, more the duller they
-are; dark lamp-lit scenes get 3/4 of their orange removed (daylight keeps half).
+are; dark lamp-lit scenes get 3/4 of their orange removed (daylight keeps half; replaced 2026-11-02,
+see "White balance from FiveK" below).
 Highlight guard (2026-11-02): the experts' brightest 5% sit at L* ~80 in every scene (never white).
 So exposure stops before our brightest 5% passes L* 90; the highlights slider then brings it near 80.
 Found on a real photo: a white shirt in front of a black speaker got +1.3 EV and turned white.
@@ -163,8 +164,20 @@ Still off:
   that dark, so we don't chase it. Night preset now uses the full auto fix (was 40%): night photos
   distance 9.95 -> 5.86.
 - Indoor people (b 12.3 vs 8.6) and night indoors (10.2 vs 6.6) are still too warm.
-- Highlights turned slightly green (a* −1.9 vs experts +0.5), likely from the stronger white balance.
+- Highlights turned slightly green (a* −1.9 vs experts +0.5). Leaving the tint alone (below) fixed
+  the overall color, but highlights are still ~−2. Next suspect: the per-channel highlight rolloff.
 - Daylight: pros warm photos a little more than we do (outdoor people b 4.8 vs 9.1).
+
+**White balance from FiveK (2026-11-02).** We measured the cast in the gray areas of each input and
+of each expert's version, with the same detector auto uses (281 photos). Pros remove about 2/3 of a
+blue/orange cast, and the share is the same in daylight and at night: a strong lamp cast just has
+more to remove. So one rule replaced "half way in daylight, 3/4 at night": temperature 2/3 of the
+way to neutral, in any light. The green/magenta part (tint) is left alone: fixing it too was what
+turned our highlights green. Tried and rejected (worse distance): a slightly warm target instead of
+neutral, and fixing half the tint. Result (`check --fast`, 100 photos): `natural` 3.60 -> 3.53,
+night outdoors 9.50 -> 3.60, `night` preset 9.33 -> 4.51. Still weakest: indoor people and night
+indoors (distance ~11-12). On iPhone photos: warm casts get cooled up to ~15% (was ~8%); on a
+portrait this made skin less orange without looking cold.
 
 Caveat: FiveK inputs are flat Nikon/Canon raws, darker than a finished iPhone photo. The *targets*
 (experts' L*, chroma, warmth) transfer; the size of the gap on iPhone photos will be smaller.
@@ -181,7 +194,7 @@ Caveat: FiveK inputs are flat Nikon/Canon raws, darker than a finished iPhone ph
 | Empty background space helps | Curalate | Don't over-crop travel shots (docs/06) |
 | Score edits against average taste | AVA / NIMA | Yes, `jogo score`. Good for picking photos, not grades |
 | Brightness, contrast, color like pros | FiveK | Yes, auto rules tuned on 300 photos (2026-11-01) |
-| Remove lamp color at night | FiveK, gray world | Yes, 3/4 way in dark scenes. Still a bit warm |
+| Remove lamp color at night | FiveK, gray world | Yes, 2/3 of the cast in any light (2026-11-02). Indoors still a bit warm |
 
 ## Next steps
 
