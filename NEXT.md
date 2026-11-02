@@ -14,20 +14,19 @@ Merged to `main` 2026-11-02 (branch `research-decision-flow`): references and de
 it gave `auto.py` (brighter target, highlight guard, vibrance for dull photos, white balance
 2/3 of the way in any light, warmth-only). `natural` distance to the pros: 6.25 -> 3.35.
 
-Branch `adaptive-grade` (not merged yet), 2026-11-02:
+Merged and pushed 2026-11-02 (branch `adaptive-grade`):
 - `brightness` slider (midtone bump). Auto lifts midtones when the highlight guard or neon rule
   holds exposure back (0.5 per EV, max +0.5; more bleached a face on iPhone 0443).
 - Neon rule stops exposure where colored lights clip, instead of +0.2 for any colorful area.
 - Gray world white balance for strongly orange rooms with no gray, day or night.
 - FiveK `check --fast`: `natural` 3.35 -> 2.18, indoor people 7.36 -> 6.67.
 
-## Next: indoor people (adaptive color grade, docs/09 block 4)
+## Next: check each scene's look against FiveK
 
-Indoor people are the weakest scene (~6.7): too warm (b 12.4 vs pros 8.6) and too colorful
-(18.3 vs 16.5, mostly the extra orange). Auto can't see it: beige walls read as "gray", and a
-stronger white balance hurt other scenes (all 2.18 -> 2.85). Next idea: a scene-level fix, since
-Claude picks the look per scene (docs/09 table): test `natural` + cooler temperature on FiveK
-indoor people (`SCENE` filter: see the scratch `fast.py` idea, or add `--scene` to `check`).
+`fivek.py check --scene "<scene>" --looks a,b,c` compares looks on one scene (names as in the report).
+Done: indoor people -> `bright` (5.00 vs `natural` 7.87; auto alone can't remove that warmth because
+beige walls read as gray, and a stronger white balance hurt other scenes).
+Next: outdoor people (`airy`? check skin on iPhone), night indoors (~11, the weakest now).
 
 Check a change in ~3 min: `.venv/Scripts/python research/fivek.py check --fast --looks natural,night`
 (lower `dist` = closer to the pros; compares old and new on the same 100 photos).

@@ -7,6 +7,7 @@
   python research/fivek.py report           # expert average vs our looks, per scene
   python research/fivek.py check --looks natural   # re-run some looks after a tuning change (~30 min)
   python research/fivek.py check --fast            # same on every 3rd photo, no face step (~2 min)
+  python research/fivek.py check --scene "indoors / person(s)"   # one scene from the report
 
 Data lives in research/data/ (git-ignored). Big expert TIFFs are shrunk to 1024 px 16-bit PNGs and
 deleted. Source: https://data.csail.mit.edu/graphics/fivek/ (see docs/08-references.md).
@@ -234,7 +235,9 @@ def cmd_check(args) -> None:
     out = DATA / "stats_check.csv"
     fields = ["name", "subject", "light", "location", "time", "source"] + STATS
     sample_rows = list(csv.DictReader(open(DATA / "sample.csv", encoding="utf-8")))
-    if args.fast:  # 100 photos, no skin hue: good enough to see if a change helps
+    if args.scene:
+        sample_rows = [r for r in sample_rows if scene_of(r) == args.scene]
+    elif args.fast:  # 100 photos, no skin hue: good enough to see if a change helps
         sample_rows = sample_rows[::3]
     t0 = time.perf_counter()
     with open(out, "w", newline="", encoding="utf-8") as f:
@@ -268,6 +271,15 @@ WEIGHTS = {"L_median": 1 / 4, "contrast": 1 / 6, "chroma": 1 / 3, "a": 1 / 2, "b
            "shadow_b": 1 / 3, "high_b": 1 / 3}
 
 
+def scene_of(r: dict) -> str:
+    # Night and dusk light change the edit more than the subject does; "unknown" time is mostly daylight-like.
+    if r["time"] == "night":
+        return f"night / {r['location']}"
+    if r["time"] == "dawn or dusk":
+        return f"dusk / {r['location']}"
+    return f"{r['location']} / {r['subject']}"
+
+
 def cmd_report(args) -> None:
     import statistics as st
     rows = list(csv.DictReader(open(DATA / "stats.csv", encoding="utf-8")))
@@ -283,17 +295,9 @@ def cmd_report(args) -> None:
             r[k] = float(r[k]) if r[k] not in ("", "nan") else float("nan")
     by = defaultdict(lambda: defaultdict(list))  # scene -> source -> rows
 
-    def scene(r):
-        # Night and dusk light change the edit more than the subject does; "unknown" time is mostly daylight-like.
-        if r["time"] == "night":
-            return f"night / {r['location']}"
-        if r["time"] == "dawn or dusk":
-            return f"dusk / {r['location']}"
-        return f"{r['location']} / {r['subject']}"
-
     for r in rows:
         src = "experts" if r["source"].startswith("expert_") else r["source"]
-        by[scene(r)][src].append(r)
+        by[scene_of(r)][src].append(r)
         by["ALL"][src].append(r)
 
     def mean(rs, k):
@@ -341,6 +345,7 @@ def main() -> None:
     c = sub.add_parser("check")
     c.add_argument("--looks", default="natural", help="Comma-separated presets to re-run.")
     c.add_argument("--fast", action="store_true", help="Every 3rd photo, skip faces (~2 min per look).")
+    c.add_argument("--scene", help='Only one scene, as named in the report, e.g. "indoors / person(s)".')
     c.set_defaults(f=cmd_check)
     args = p.parse_args()
     args.f(args)

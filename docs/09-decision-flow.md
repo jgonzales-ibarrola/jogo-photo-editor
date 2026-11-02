@@ -118,7 +118,7 @@ The look is chosen by **light + subject**, not by time of day.
  ────────────────┼───────────────────┼──────────┼───────────────────┼────────────────────
  strong sun      │ tropical          │ food     │ amber             │ beach / tropical
  cloudy / shade  │ gold              │ food     │ amber             │ gold
- indoor          │ natural           │ food     │ amber             │ natural
+ indoor          │ bright            │ food     │ amber             │ natural
  night (lamps)   │ night             │ food     │ night             │ night
  neon / colored  │ natural (lights   │ food     │ natural (lights   │ natural (lights
                  │ capped, block 3)  │          │ capped, block 3)  │ capped, block 3)
@@ -130,8 +130,12 @@ outdoor people `airy`/`golden-hour`; outdoor buildings and nature `airy`/`landsc
 raws, and they mostly reward brighter, more colorful looks. More color conflicts with the owner's
 "too vivid on iPhone" bug (my-style.md, 2026-10-31), so the table above is kept for now.
 Changed: `night` now uses the full auto fix (it held auto at 40%, so night photos stayed much darker
-than the pros': distance 9.95 -> 5.86). Candidates to try next: `bright` for indoor people,
-`airy` for outdoor people (check skin warmth on iPhone first).
+than the pros': distance 9.95 -> 5.86).
+Changed 2026-11-02: indoor people `natural` -> `bright`. On all 26 FiveK indoor-people photos
+(`check --scene "indoors / person(s)"`) `bright` is at 5.00 vs `natural` 7.87: its lower orange and
+yellow saturation remove the extra warmth that auto can't see (beige walls read as gray).
+Checked on iPhone 0039 (restaurant): lighter, skin less orange, not vivid.
+Still to try: `airy` for outdoor people (check skin warmth on iPhone first).
 
 ## Research targets used by the blocks
 

@@ -200,6 +200,7 @@ Lamp-lit rooms in the day: some had no gray area, so auto skipped white balance,
 made them even more orange (b 25 -> 44; pros took it to 9). The whole-photo average ("gray world")
 is now used for any photo with no gray when it is strongly orange (warmth > 0.3), not only at
 night. Indoor people 7.50 -> 6.67; none of the 46 iPhone test photos changed.
+Indoor people look: `bright` 5.00 vs `natural` 7.87 (26 photos, full check). Scene table changed.
 
 Caveat: FiveK inputs are flat Nikon/Canon raws, darker than a finished iPhone photo. The *targets*
 (experts' L*, chroma, warmth) transfer; the size of the gap on iPhone photos will be smaller.
